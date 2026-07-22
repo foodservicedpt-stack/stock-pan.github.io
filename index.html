@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stock & Amasado v2 — Obrador Colaborativo</title>
+<meta name="description" content="Panel colaborativo v2: gestiona productos, reglas semanales, programa amasadas y controla márgenes." />
+<script src="https://cdn.tailwindcss.com">
+</script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+bakery: { bg: '#FAF8F5', card: '#FFFDFB', primary: '#4A2C11', accent: '#8B5A2B', accentLight: '#F5EBE1', danger: '#A83232', success: '#2E7D32', border: '#EBE5DF' }
+},
+animation: { 'fade-in': 'fadeIn 0.35s ease-out both' },
+keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+}
+}
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+body {
+font-family: 'Plus Jakarta Sans', sans-serif;
+background-color: #FAF8F5;
+background-image: radial-gradient(circle at 8% 0%, rgba(139, 90, 43, 0.07), transparent 45%),
+radial-gradient(circle at 100% 15%, rgba(168, 50, 50, 0.05), transparent 40%);
+background-attachment: fixed;
+}
+h1,
+h2,
+h3,
+.font-serif {
+font-family: 'Playfair Display', serif;
+}
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+::-webkit-scrollbar-track {
+background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+background: #D5C9BE;
+border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #C4B5A5;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+.grad-accent {
+background-image: linear-gradient(135deg, #8B5A2B 0%, #4A2C11 100%);
+}
+.grad-text {
+background-image: linear-gradient(135deg, #4A2C11 0%, #8B5A2B 65%, #A8622E 100%);
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
+}
+.glass {
+background: rgba(255, 255, 255, 0.6);
+backdrop-filter: blur(14px);
+-webkit-backdrop-filter: blur(14px);
+}
+.product-card {
+transition: all 0.2s ease;
+}
+.product-card.disabled {
+opacity: 0.5;
+filter: grayscale(0.8);
+}
+.product-card.disabled .stock-input {
+opacity: 0.5;
+pointer-events: none;
+}
+/* Estilos para reglas semanales en columnas */
+.weekly-rules-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1.5rem;
+}
+.weekly-service-col {
+background: #f9f6f2;
+border-radius: 16px;
+padding: 1rem;
+border: 1px solid #ebe5df;
+}
+.weekly-service-col h4 {
+font-weight: 700;
+font-size: 0.9rem;
+margin-bottom: 0.75rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+color: #4A2C11;
+}
+.weekly-day-row {
+display: grid;
+grid-template-columns: 70px 1fr;
+gap: 0.25rem 0.5rem;
+align-items: center;
+font-size: 0.7rem;
+padding: 0.15rem 0;
+border-bottom: 1px solid #ede8e2;
+}
+.weekly-day-row .day-label {
+font-weight: 600;
+color: #6b5a4a;
+}
+.weekly-day-row .day-breads {
+display: flex;
+flex-wrap: wrap;
+gap: 0.2rem 0.5rem;
+}
+.weekly-day-row .day-breads label {
+display: flex;
+align-items: center;
+gap: 0.2rem;
+font-size: 0.65rem;
+}
+.weekly-day-row .day-breads input {
+width: 36px;
+padding: 0.1rem 0.2rem;
+border-radius: 6px;
+border: 1px solid #d5c9be;
+text-align: center;
+font-size: 0.7rem;
+background: white;
+}
+.weekly-day-row .day-breads input:disabled {
+background: #f0ece8;
+opacity: 0.6;
+}
+.weekly-svc-toggle {
+margin-left: 0.5rem;
+accent-color: #8B5A2B;
+}
+.bake-badge {
+background: #dbeafe;
+color: #1e40af;
+font-size: 0.6rem;
+padding: 0.1rem 0.4rem;
+border-radius: 12px;
+font-weight: 700;
+white-space: nowrap;
+}
+.calendar-day.has-bake {
+border-color: #1e40af !important;
+background: #eff6ff !important;
+}
+.calendar-day.bake-scheduled {
+border-color: #2563eb !important;
+background: #dbeafe !important;
+}
+.btn-harvest {
+background: #22c55e;
+color: white;
+font-size: 0.6rem;
+padding: 0.1rem 0.4rem;
+border-radius: 10px;
+border: none;
+cursor: pointer;
+font-weight: 700;
+}
+.btn-harvest:hover {
+background: #16a34a;
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js">
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js">
+</script>
+</head>
+<body class="text-neutral-800 min-h-screen pb-16">
+<!-- BANNER DE CONEXIÓN -->
+<div id="connection-banner" class="glass sticky top-0 z-40 border-b border-amber-100/70 px-4 sm:px-6 py-2.5 flex flex-wrap gap-2 justify-between items-center text-xs font-semibold text-amber-900 transition-all duration-300">
+<div class="flex items-center gap-2">
+<span id="connection-dot" class="w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse"></span>
+<span id="connection-text">Conectando con la base de datos en tiempo real...</span>
+</div>
+<div class="flex items-center gap-3">
+<span id="sync-status" class="text-[10px] text-amber-700 font-mono">Iniciando...</span>
+<button onclick="renderAll()" class="bg-white/80 hover:bg-white text-[10px] px-2.5 py-1 rounded-md border border-amber-200 transition">🔄 Refrescar</button>
+</div>
+</div>
+<!-- HEADER -->
+<header class="max-w-6xl mx-auto px-6 pt-10 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador Colaborativo v2</span>
+</div>
+<h1 class="text-5xl md:text-6xl font-bold grad-text mt-3 leading-[1.05] tracking-tight">Stock &amp; Amasado</h1>
+<p class="text-xs text-neutral-500 mt-2">Sincronizado en tiempo real · Planifica tus amasadas con antelación.</p>
+</div>
+<div class="flex flex-wrap gap-1.5 bg-neutral-200/50 p-1.5 rounded-2xl shadow-inner">
+<button onclick="switchView('stock')" id="btn-stock" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100">📦 Stock</button>
+<button onclick="switchView('calendar')" id="btn-calendar" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Calendario</button>
+<button onclick="openWeeklyRulesModal()" class="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition grad-accent text-white shadow-sm hover:opacity-90 flex items-center gap-1">⚙️ Reglas Semanales</button>
+<button onclick="openProductsModal()" class="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary border border-neutral-200 hover:bg-neutral-50 shadow-sm">📦 Gestionar Productos</button>
+</div>
+</header>
+<!-- BARRA RÁPIDA -->
+<div class="max-w-6xl mx-auto px-6 flex flex-wrap gap-2 -mt-1 mb-2">
+<button onclick="openActivityModal()" class="flex items-center gap-1 text-xs font-bold text-bakery-primary bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">🕓 Actividad</button>
+<button onclick="openNameModal()" id="btn-user-name" class="flex items-center gap-1 text-xs font-bold text-neutral-500 bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">👤 <span id="btn-user-name-label">Identificarme</span></button>
+<button onclick="checkTomorrowAlert()" class="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg transition hover:bg-amber-100 border border-amber-200 shadow-sm">🔔 Ver aviso para mañana</button>
+</div>
+<hr class="border-bakery-border max-w-6xl mx-auto my-2 px-6">
+<!-- NOTIFICACIONES (mermas automáticas) -->
+<div class="max-w-6xl mx-auto px-6 mt-4 hidden" id="notification-panel">
+<div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+<span class="text-lg">📉</span>
+<div class="flex-1 text-sm text-orange-950">
+<h4 class="font-bold text-orange-900 mb-0.5">Mermas Automáticas Aplicadas</h4>
+<p id="notification-text-content" class="whitespace-pre-line leading-relaxed text-xs text-orange-800"></p>
+</div>
+<button onclick="dismissNotification()" class="text-orange-900 font-bold text-sm p-1">✕</button>
+</div>
+</div>
+<!-- AVISO DE PREPARACIÓN PARA MAÑANA -->
+<div class="max-w-6xl mx-auto px-6 mt-4 hidden" id="tomorrow-alert-panel">
+<div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
+<span class="text-lg">🧑‍🍳</span>
+<div class="flex-1 text-sm text-blue-950">
+<h4 class="font-bold text-blue-900 mb-0.5">📋 Lo que debes preparar para mañana</h4>
+<p id="tomorrow-alert-text" class="whitespace-pre-line leading-relaxed text-xs text-blue-800"></p>
+</div>
+<button onclick="document.getElementById('tomorrow-alert-panel').classList.add('hidden')" class="text-blue-900 font-bold text-sm p-1">✕</button>
+</div>
+</div>
+<!-- MAIN -->
+<main class="max-w-6xl mx-auto px-6 mt-6">
+<!-- VISTA STOCK -->
+<section id="view-stock" class="space-y-6">
+<div id="today-summary" class="glass border border-bakery-border rounded-3xl p-5 shadow-sm"></div>
+<div id="production-orders-panel" class="hidden bg-red-50 border border-red-200 rounded-2xl p-5 shadow-sm">
+<h3 class="text-red-900 font-bold text-sm flex items-center gap-2 mb-3">⚠️ Órdenes de Producción</h3>
+<div id="production-orders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+</div>
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="text-xs font-semibold text-neutral-400" id="last-updated-time">Sincronizando estado...</div>
+<div class="bg-white border border-bakery-border rounded-2xl px-6 py-3 flex gap-8 shadow-sm">
+<div class="text-center">
+<span class="text-[9px] text-neutral-400 block uppercase font-bold tracking-wider">Total uds</span>
+<span id="total-stock-count" class="text-2xl font-bold grad-text">---</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="stock-grid">
+<!-- Tarjetas de producto renderizadas por JS -->
+</div>
+</section>
+<!-- VISTA CALENDARIO -->
+<section id="view-calendar" class="hidden space-y-4">
+<div class="bg-white border border-bakery-border rounded-3xl p-6 shadow-sm">
+<div class="flex justify-between items-center mb-4">
+<div>
+<h2 class="text-2xl font-serif font-bold text-bakery-primary" id="calendar-title">Mes Año</h2>
+<p class="text-xs text-neutral-400 mt-1 flex gap-4">
+<span><span class="opacity-50">⚙️ Auto</span> = Regla semanal</span>
+<span><span class="text-bakery-accent font-bold">📌 Modificado</span> = Excepción manual</span>
+<span><span class="text-blue-600 font-bold">🧑‍🍳</span> = Amasada programada</span>
+</p>
+</div>
+<div class="flex gap-2">
+<button onclick="changeMonth(-1)" class="p-2 border border-bakery-border hover:bg-neutral-50 rounded-xl font-bold text-neutral-600">◀</button>
+<button onclick="setTodayMonth()" class="px-4 py-2 text-xs font-bold border border-bakery-border hover:bg-neutral-50 rounded-xl">Mes Actual</button>
+<button onclick="changeMonth(1)" class="p-2 border border-bakery-border hover:bg-neutral-50 rounded-xl font-bold text-neutral-600">▶</button>
+</div>
+</div>
+<div id="autonomy-legend" class="flex flex-wrap gap-2 mb-4 pb-4 border-b border-neutral-100"></div>
+<div class="grid grid-cols-7 text-center font-bold text-[10px] uppercase tracking-wider text-neutral-400 mb-2 py-2 border-b border-neutral-100">
+<div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+</div>
+<div class="grid grid-cols-7 gap-2" id="calendar-grid"></div>
+</div>
+</section>
+</main>
+<!-- ===== MODALES ===== -->
+<!-- MODAL: REGLAS SEMANALES (vista por columnas de servicios) -->
+<div id="modal-weekly-rules" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+<div class="bg-white w-full max-w-6xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[96vh] overflow-y-auto">
+<div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
+<div>
+<h3 class="text-2xl font-serif font-bold text-bakery-primary">📅 Reglas Fijas — Semana Completa</h3>
+<p class="text-[10px] text-neutral-400">Configura el consumo base para cada servicio y día. Las excepciones manuales tienen prioridad.</p>
+</div>
+<button onclick="closeWeeklyRulesModal()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl p-1">✕</button>
+</div>
+<div id="weekly-rules-container" class="py-4">
+<!-- Se renderiza por JS -->
+</div>
+<div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white">
+<button onclick="closeWeeklyRulesModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cancelar</button>
+<button onclick="saveWeeklyRules()" class="flex-1 py-3 rounded-xl bg-bakery-primary text-white font-semibold hover:bg-bakery-accent transition text-sm">💾 Guardar todas las reglas</button>
+</div>
+</div>
+</div>
+<!-- MODAL: GESTIÓN DE PRODUCTOS -->
+<div id="modal-products" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+<div class="bg-white w-full max-w-3xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[96vh] overflow-y-auto">
+<div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
+<div>
+<h3 class="text-2xl font-serif font-bold text-bakery-primary">📦 Gestionar Productos</h3>
+<p class="text-[10px] text-neutral-400">Activa/desactiva, ajusta márgenes o crea tus propios panes.</p>
+</div>
+<button onclick="closeProductsModal()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl p-1">✕</button>
+</div>
+<div id="products-list-container" class="py-4 space-y-3">
+<!-- Renderizado por JS -->
+</div>
+<div class="pt-4 border-t border-bakery-border">
+<div class="flex gap-3">
+<input type="text" id="new-product-name" placeholder="Nombre del pan (ej. Chapata)" class="flex-1 px-3 py-2 border border-bakery-border rounded-xl text-sm">
+<select id="new-product-type" class="px-3 py-2 border border-bakery-border rounded-xl text-sm bg-white">
+<option value="Blanco">Blanco</option>
+<option value="Integral">Integral</option>
+<option value="Especial">Especial</option>
+</select>
+<input type="number" id="new-product-batch" placeholder="Lote" value="20" class="w-20 px-2 py-2 border border-bakery-border rounded-xl text-sm text-center">
+<button onclick="addCustomProduct()" class="px-4 py-2 rounded-xl bg-bakery-accent text-white font-bold text-sm hover:opacity-90">➕ Añadir</button>
+</div>
+<p class="text-[9px] text-neutral-400 mt-2">Los productos personalizados se guardan en la nube. Puedes eliminarlos desde aquí.</p>
+</div>
+<div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white mt-4">
+<button onclick="closeProductsModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cerrar</button>
+<button onclick="saveProductSettings()" class="flex-1 py-3 rounded-xl bg-bakery-primary text-white font-semibold hover:bg-bakery-accent transition text-sm">💾 Guardar cambios</button>
+</div>
+</div>
+</div>
+<!-- MODAL: PLANIFICAR AMASADA -->
+<div id="modal-schedule-bake" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[55] backdrop-blur-sm">
+<div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-bakery-border">
+<h3 class="text-xl font-serif font-bold text-bakery-primary mb-1">🧑‍🍳 Programar Amasada</h3>
+<p class="text-xs text-neutral-400 mb-4">Elige el día en que empezarás a amasar. Al día siguiente podrás registrar la producción.</p>
+<input type="hidden" id="schedule-bread-key">
+<div class="space-y-3">
+<div>
+<label class="block text-[10px] font-bold text-neutral-500">Producto</label>
+<p id="schedule-product-name" class="font-bold text-bakery-primary"></p>
+</div>
+<div>
+<label class="block text-[10px] font-bold text-neutral-500">Fecha de inicio de amasada</label>
+<input type="date" id="schedule-date" class="w-full p-3 border border-bakery-border rounded-xl text-sm">
+</div>
+<div>
+<label class="block text-[10px] font-bold text-neutral-500">Cantidad a amasar (prevista)</label>
+<input type="number" id="schedule-qty" min="1" value="20" class="w-full p-3 border border-bakery-border rounded-xl text-sm">
+</div>
+</div>
+<div class="pt-4 border-t border-bakery-border flex gap-3 mt-4">
+<button onclick="closeScheduleModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cancelar</button>
+<button onclick="saveScheduledBake()" class="flex-1 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition text-sm">📅 Guardar</button>
+</div>
+</div>
+</div>
+<!-- MODAL: PLAN DIARIO (excepción) -->
+<div id="modal-plan" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+<div class="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[90vh] overflow-y-auto">
+<div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
+<div>
+<h3 id="modal-date-title" class="text-2xl font-serif font-bold text-bakery-primary capitalize">Planificación Diaria</h3>
+<p class="text-[10px] text-neutral-400 mt-1" id="modal-date-subtitle">Modificando consumo para este día.</p>
+</div>
+<button onclick="closeModal()" class="text-neutral-400 font-bold text-xl p-1">✕</button>
+</div>
+<div id="exception-banner" class="hidden mt-4 bg-amber-50 text-amber-800 text-xs font-bold p-3 rounded-xl border border-amber-200 flex justify-between items-center">
+<span>📌 Este día tiene una modificación manual.</span>
+<button onclick="revertToRule()" class="px-3 py-1 bg-white rounded border border-amber-300 hover:bg-amber-100 transition">Volver a regla automática</button>
+</div>
+<!-- Amasadas programadas para este día -->
+<div id="scheduled-bakes-for-day" class="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-200 text-xs">
+<span class="font-bold text-blue-800">🧑‍🍳 Amasadas programadas para este día:</span>
+<div id="scheduled-bakes-list" class="mt-1 flex flex-wrap gap-1"></div>
+<div id="harvest-bakes-area" class="mt-2"></div>
+</div>
+<div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1" id="modal-services-container"></div>
+<div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white">
+<button onclick="closeModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cancelar</button>
+<button onclick="savePlan()" class="flex-1 py-3 rounded-xl bg-bakery-accent text-white font-semibold hover:bg-bakery-primary transition text-sm flex items-center justify-center gap-2">💾 Guardar como Excepción</button>
+</div>
+</div>
+</div>
+<!-- MODAL: NOMBRE -->
+<div id="modal-name" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
+<div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-bakery-border text-center">
+<div class="text-4xl mb-2">👋</div>
+<h3 class="text-xl font-serif font-bold text-bakery-primary mb-1">¿Cómo te llamas?</h3>
+<p class="text-xs text-neutral-400 mb-4">Así el equipo sabrá quién hizo cada cambio.</p>
+<input type="text" id="input-user-name" placeholder="Tu nombre" maxlength="24" class="w-full px-4 py-3 border border-bakery-border rounded-xl text-sm text-center focus:outline-none focus:ring-2 focus:ring-bakery-accent/30 mb-4">
+<div class="flex gap-2">
+<button onclick="closeNameModal()" class="flex-1 py-3 rounded-xl border border-bakery-border text-neutral-600 font-bold hover:bg-neutral-50 transition text-sm">Ahora no</button>
+<button onclick="saveUserName()" class="flex-1 py-3 rounded-xl grad-accent text-white font-bold hover:opacity-90 transition text-sm">Guardar</button>
+</div>
+</div>
+</div>
+<!-- MODAL: ACTIVIDAD -->
+<div id="modal-activity" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+<div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh] border border-bakery-border">
+<div class="flex justify-between items-center pb-4 border-b border-bakery-border">
+<h3 class="text-xl font-serif font-bold text-bakery-primary">🕓 Actividad Reciente</h3>
+<button onclick="closeActivityModal()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl p-1">✕</button>
+</div>
+<div class="flex-1 overflow-y-auto py-3 space-y-2" id="activity-log-list">
+<p class="text-xs text-neutral-400 text-center py-6">Sin actividad todavía.</p>
+</div>
+</div>
+</div>
+<!-- ============================== JAVASCRIPT ============================== -->
+<script>
+// ----- CONFIGURACIÓN BASE -----
+const SERVICES_CONFIG = [
+{ key: 'desayuno', name: 'Desayuno', icon: '☕', color: 'border-amber-200 bg-amber-50/10' },
+{ key: 'comida', name: 'Comida', icon: '☀️', color: 'border-orange-200 bg-orange-50/10' },
+{ key: 'evento', name: 'Evento Extra', icon: '🎉', color: 'border-purple-200 bg-purple-50/10' }
+];
+const DEFAULT_BREADS = {
+hogazas_blancas: { name: 'Hogazas Blancas', type: 'Blanco', defaultBatch: 20 },
+hogazas_integrales: { name: 'Hogazas Integrales', type: 'Integral', defaultBatch: 20 },
+barras_blancas: { name: 'Barras Blancas', type: 'Blanco', defaultBatch: 50 },
+barras_integrales: { name: 'Barras Integrales', type: 'Integral', defaultBatch: 50 },
+bollitos_blancos: { name: 'Bollitos Blancos', type: 'Blanco', defaultBatch: 100 },
+bollitos_integrales: { name: 'Bollitos Integrales', type: 'Integral', defaultBatch: 100 }
+};
+const BREAD_COLORS = {
+hogazas_blancas: { dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300' },
+hogazas_integrales: { dot: 'bg-orange-700', text: 'text-orange-800', bg: 'bg-orange-50', border: 'border-orange-400' },
+barras_blancas: { dot: 'bg-sky-500', text: 'text-sky-700', bg: 'bg-sky-50', border: 'border-sky-300' },
+barras_integrales: { dot: 'bg-blue-700', text: 'text-blue-800', bg: 'bg-blue-50', border: 'border-blue-400' },
+bollitos_blancos: { dot: 'bg-pink-500', text: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300' },
+bollitos_integrales: { dot: 'bg-purple-600', text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300' }
+};
+function getShortName(key) {
+const sn = {
+hogazas_blancas: 'H. Bl.',
+hogazas_integrales: 'H. Int.',
+barras_blancas: 'Bar. Bl.',
+barras_integrales: 'Bar. Int.',
+bollitos_blancos: 'Boll. Bl.',
+bollitos_integrales: 'Boll. Int.'
+};
+return sn[key] || key;
+}
+// ----- FIREBASE -----
+const firebaseConfig = {
+apiKey: "AIzaSyB-FDPCgEO7P_yt3746vEbtqV0ElGVxaas",
+authDomain: "panaderia-stock-8fd02.firebaseapp.com",
+databaseURL: "https://panaderia-stock-8fd02-default-rtdb.europe-west1.firebasedatabase.app",
+projectId: "panaderia-stock-8fd02",
+storageBucket: "panaderia-stock-8fd02.firebasestorage.app",
+messagingSenderId: "933298619282",
+appId: "1:933298619282:web:77c20c2dfbafcef45e374b"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const stateRef = db.ref('obrador_panaderia/estado_v2');
+const activityRef = db.ref('obrador_panaderia/actividad_v2');
+// ----- ESTADO GLOBAL -----
+let currentUserName = localStorage.getItem('panaderia_user_name') || '';
+let isApplyingRemoteUpdate = false;
+let firstSnapshotReceived = false;
+let lastActivityEntries = [];
+// Estructura principal
+let state = {
+stock: {}, // { breadKey: { qty: 0, margin: 5 } }
+plans: {}, // { '2025-01-01': { isException: true, services: { desayuno: { active: true, bread: { ... } } } } }
+weeklyRules: { 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {} }, // 0=Dom, 1=Lun...
+lastProcessedDate: null,
+tempBatchInputs: {},
+productSettings: {}, // { breadKey: { enabled: true, margin: 5 } }
+customProducts: {}, // { breadKey: { name, type, defaultBatch } }
+bakeSchedule: {} // { '2025-01-15': { 'hogazas_blancas': 20, ... } }
+};
+// Inicializar con los productos por defecto
+function initDefaultState() {
+Object.keys(DEFAULT_BREADS).forEach(k => {
+if (!state.stock[k]) state.stock[k] = { qty: 0, margin: 5 };
+if (!state.productSettings[k]) state.productSettings[k] = { enabled: true, margin: 5 };
+if (!state.tempBatchInputs[k]) state.tempBatchInputs[k] = DEFAULT_BREADS[k].defaultBatch;
+});
+for (let i = 0; i <= 6; i++) {
+if (!state.weeklyRules[i]) state.weeklyRules[i] = {};
+SERVICES_CONFIG.forEach(s => {
+if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false, bread: {} };
+});
+}
+}
+initDefaultState();
+// ----- FUNCIONES DE IDENTIDAD -----
+function updateUserNameButton() {
+const label = document.getElementById('btn-user-name-label');
+if (label) label.innerText = currentUserName || 'Identificarme';
+}
+function ensureUserName() { updateUserNameButton(); if (!currentUserName) openNameModal(); }
+function openNameModal() { document.getElementById('input-user-name').value = currentUserName;
+document.getElementById('modal-name').classList.remove('hidden'); }
+function closeNameModal() { document.getElementById('modal-name').classList.add('hidden'); }
+function saveUserName() { const val = document.getElementById('input-user-name').value.trim(); if (val) { currentUserName = val
+.slice(0, 24);
+localStorage.setItem('panaderia_user_name', currentUserName);
+updateUserNameButton(); }
+closeNameModal(); }
+// ----- ACTIVIDAD -----
+function logActivity(text) {
+activityRef.push({
+user: currentUserName || 'Alguien',
+text: text,
+ts: firebase.database.ServerValue.TIMESTAMP
+}).catch(() => {});
+}
+function renderActivityLog(entries) {
+lastActivityEntries = entries;
+const list = document.getElementById('activity-log-list');
+if (!list) return;
+if (!entries.length) { list.innerHTML = '<p class="text-xs text-neutral-400 text-center py-6">Sin actividad.</p>'; return; }
+list.innerHTML = entries.map(e => `
+<div class="flex items-start gap-2 text-xs bg-neutral-50 rounded-xl px-3 py-2 border border-neutral-100">
+<span class="text-base leading-none">👤</span>
+<div class="flex-1 min-w-0">
+<p class="text-neutral-700 break-words"><span class="font-bold text-bakery-primary">${escapeHtml(e.user)}</span> ${escapeHtml(e.text)}</p>
+<p class="text-[9px] text-neutral-400 mt-0.5">${timeAgo(e.ts)}</p>
+</div>
+</div>
+`).join('');
+}
+function escapeHtml(str) { const d = document.createElement('div');
+d.textContent = str == null ? '' : String(str); return d.innerHTML; }
+function timeAgo(ts) { if (!ts) return ''; const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000)); if (diffSec <
+60) return 'Hace un momento'; const diffMin = Math.floor(diffSec / 60); if (diffMin < 60) return `Hace ${diffMin} min`;
+const diffH = Math.floor(diffMin / 60); if (diffH < 24) return `Hace ${diffH} h`; return `Hace ${Math.floor(diffH/24)} d`; }
+function openActivityModal() { document.getElementById('modal-activity').classList.remove('hidden');
+renderActivityLog(lastActivityEntries); }
+function closeActivityModal() { document.getElementById('modal-activity').classList.add('hidden'); }
+// ----- SINCRO FIRESTORE -----
+function initRealtimeSync() {
+db.ref('.info/connected').on('value', snap => {
+document.getElementById('connection-dot').className = snap.val() ? "w-2.5 h-2.5 bg-emerald-500 rounded-full" :
+"w-2.5 h-2.5 bg-red-500 rounded-full animate-none";
+document.getElementById('connection-text').innerText = snap.val() ? "Conectado en tiempo real" :
+"Sin conexión (Local)";
+document.getElementById('sync-status').innerText = snap.val() ? "Sincronizado" : "Offline";
+});
+stateRef.on('value', snapshot => {
+const cloudData = snapshot.val();
+if (cloudData) {
+isApplyingRemoteUpdate = true;
+mergeCloudStates(cloudData);
+isApplyingRemoteUpdate = false;
+} else if (!firstSnapshotReceived) {
+saveStateToCloud();
+}
+firstSnapshotReceived = true;
+processAutoDepletions();
+renderAll();
+document.getElementById('last-updated-time').innerText = `Última actualización: ${new Date().toLocaleTimeString()}`;
+});
+activityRef.limitToLast(30).on('value', (snapshot) => {
+const entries = [];
+snapshot.forEach(child => { entries.push(child.val()); });
+entries.reverse();
+renderActivityLog(entries);
+});
+}
+function mergeCloudStates(parsed) {
+if (parsed.stock) Object.keys(parsed.stock).forEach(k => { if (!state.stock[k]) state.stock[k] = { qty: 0,
+margin: 5 };
+state.stock[k] = parsed.stock[k]; });
+if (parsed.plans) state.plans = parsed.plans || {};
+if (parsed.weeklyRules) state.weeklyRules = parsed.weeklyRules;
+if (parsed.lastProcessedDate) state.lastProcessedDate = parsed.lastProcessedDate;
+if (parsed.tempBatchInputs) state.tempBatchInputs = parsed.tempBatchInputs;
+if (parsed.productSettings) state.productSettings = parsed.productSettings;
+if (parsed.customProducts) state.customProducts = parsed.customProducts;
+if (parsed.bakeSchedule) state.bakeSchedule = parsed.bakeSchedule;
+// Asegurar productos por defecto
+Object.keys(DEFAULT_BREADS).forEach(k => {
+if (!state.stock[k]) state.stock[k] = { qty: 0, margin: 5 };
+if (!state.productSettings[k]) state.productSettings[k] = { enabled: true, margin: 5 };
+});
+for (let i = 0; i <= 6; i++) {
+if (!state.weeklyRules[i]) state.weeklyRules[i] = {};
+SERVICES_CONFIG.forEach(s => {
+if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false, bread: {} };
+});
+}
+}
+function saveStateToCloud() {
+if (isApplyingRemoteUpdate) return Promise.resolve();
+document.getElementById('sync-status').innerText = "Guardando...";
+return stateRef.set(state).then(() => { document.getElementById('sync-status').innerText = "Sincronizado"; });
+}
+// ----- HELPERS FECHAS -----
+function getTodayDateString() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function addDays(dateStr, days) { let [y, m, d] = dateStr.split('-'); let dt = new Date(y, m - 1, d);
+dt.setDate(dt.getDate() + days); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+function getDayOfWeek(dateStr) { let [y, m, d] = dateStr.split('-'); return new Date(y, m - 1, d).getDay(); }
+function getDateObj(dateStr) { let [y, m, d] = dateStr.split('-'); return new Date(y, m - 1, d); }
+function formatDate(dateStr) { let [y, m, d] = dateStr.split('-'); return `${d}/${m}`; }
+// ----- OBTENER PRODUCTOS ACTIVOS -----
+function getActiveBreadKeys() {
+const allKeys = Object.keys(state.stock);
+return allKeys.filter(k => state.productSettings[k] && state.productSettings[k].enabled !== false);
+}
+function getBreadConfig(key) {
+if (DEFAULT_BREADS[key]) return DEFAULT_BREADS[key];
+if (state.customProducts[key]) return state.customProducts[key];
+return { name: key, type: 'Personalizado', defaultBatch: 20 };
+}
+// ----- PLAN EFECTIVO (regla o excepción) -----
+function getEffectivePlan(dateStr) {
+if (state.plans[dateStr] && state.plans[dateStr].isException) {
+return state.plans[dateStr].services || {};
+}
+const dow = getDayOfWeek(dateStr);
+return state.weeklyRules[dow] || {};
+}
+// ----- DESCUENTO AUTOMÁTICO -----
+function processAutoDepletions() {
+const todayStr = getTodayDateString();
+if (!state.lastProcessedDate) { state.lastProcessedDate = todayStr;
+saveStateToCloud(); return; }
+if (state.lastProcessedDate < todayStr) {
+let logs = [];
+let runnerStr = addDays(state.lastProcessedDate, 1);
+while (runnerStr <= todayStr) {
+let deductedThisDay = [];
+const dailyServices = getEffectivePlan(runnerStr);
+SERVICES_CONFIG.forEach(svcConf => {
+const svc = dailyServices[svcConf.key];
+if (svc && svc.active && svc.bread) {
+Object.entries(svc.bread).forEach(([bKey, qty]) => {
+if (qty > 0 && state.stock[bKey]) {
+state.stock[bKey].qty = Math.max(0, state.stock[bKey].qty - qty);
+deductedThisDay.push(`${getShortName(bKey)} (-${qty})`);
+}
+});
+}
+});
+if (deductedThisDay.length > 0) {
+logs.push(`• ${runnerStr.split('-').reverse().join('/')}: ${deductedThisDay.join(', ')}`);
+}
+runnerStr = addDays(runnerStr, 1);
+}
+state.lastProcessedDate = todayStr;
+saveStateToCloud();
+if (logs.length > 0) {
+document.getElementById('notification-text-content').innerText = logs.join('\n');
+document.getElementById('notification-panel').classList.remove('hidden');
+}
+}
+}
+function dismissNotification() { document.getElementById('notification-panel').classList.add('hidden'); }
+// ----- PROYECCIONES (autonomía + órdenes) -----
+function calculateProjections() {
+let simStock = {};
+const activeKeys = getActiveBreadKeys();
+activeKeys.forEach(k => { simStock[k] = state.stock[k] ? state.stock[k].qty : 0; });
+let autonomyDates = {};
+let orders = [];
+let runnerStr = addDays(getTodayDateString(), 1);
+for (let i = 0; i < 45; i++) {
+const plan = getEffectivePlan(runnerStr);
+activeKeys.forEach(bKey => {
+if (autonomyDates[bKey]) return;
+let dailyUsage = 0;
+SERVICES_CONFIG.forEach(s => {
+if (plan[s.key] && plan[s.key].active && plan[s.key].bread && plan[s.key].bread[bKey]) {
+dailyUsage += parseInt(plan[s.key].bread[bKey]) || 0;
+}
+});
+if (dailyUsage > 0) {
+simStock[bKey] -= dailyUsage;
+const margin = state.productSettings[bKey] ? state.productSettings[bKey].margin || 5 : 5;
+if (simStock[bKey] <= margin) {
+autonomyDates[bKey] = runnerStr;
+orders.push({ bread: bKey, date: runnerStr, remaining: simStock[bKey] });
+}
+}
+});
+runnerStr = addDays(runnerStr, 1);
+}
+return { autonomy: autonomyDates, orders: orders };
+}
+// ----- AVISO PARA MAÑANA (o próximo día con actividad) -----
+function getTomorrowAlert() {
+const todayStr = getTodayDateString();
+let checkDate = addDays(todayStr, 1);
+let maxDays = 7;
+let found = false;
+let alertTexts = [];
+let dateChecked = checkDate;
+while (maxDays > 0 && !found) {
+const plan = getEffectivePlan(dateChecked);
+let hasActivity = false;
+let details = [];
+SERVICES_CONFIG.forEach(s => {
+const svc = plan[s.key];
+if (svc && svc.active && svc.bread) {
+Object.entries(svc.bread).forEach(([bk, qty]) => {
+if (qty > 0 && state.stock[bk]) {
+const currentStock = state.stock[bk].qty || 0;
+if (currentStock < qty) {
+details.push(
+`⛔ ${getShortName(bk)} (stock ${currentStock} < ${qty})`
+);
+} else {
+details.push(`✅ ${getShortName(bk)} (${qty} uds)`);
+}
+hasActivity = true;
+}
+});
+}
+});
+if (hasActivity) {
+const dayName = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][getDayOfWeek(
+dateChecked)];
+const dateFmt = formatDate(dateChecked);
+alertTexts.push(`📅 ${dayName} ${dateFmt}:`);
+alertTexts.push(details.length ? details.join(', ') : 'Sin consumo planificado.');
+found = true;
+break;
+}
+dateChecked = addDays(dateChecked, 1);
+maxDays--;
+}
+if (!found) {
+return { hasAlert: false, text: 'No hay actividad planificada para los próximos 7 días.' };
+}
+const proj = calculateProjections();
+const tomorrowOrders = proj.orders.filter(o => o.date === checkDate);
+if (tomorrowOrders.length) {
+alertTexts.push('⚠️ Órdenes para mañana: ' + tomorrowOrders.map(o => getShortName(o.bread)).join(', '));
+}
+return { hasAlert: true, text: alertTexts.join('\n'), date: checkDate };
+}
+function checkTomorrowAlert() {
+const alert = getTomorrowAlert();
+const panel = document.getElementById('tomorrow-alert-panel');
+const text = document.getElementById('tomorrow-alert-text');
+if (alert.hasAlert) {
+text.innerText = alert.text;
+panel.classList.remove('hidden');
+} else {
+text.innerText = '✅ Todo cubierto. No hay nada urgente para mañana.';
+panel.classList.remove('hidden');
+}
+}
+// ----- RENDER: STOCK -----
+function renderStock() {
+const grid = document.getElementById('stock-grid');
+if (document.activeElement && document.activeElement.tagName === 'INPUT' && grid.contains(document.activeElement))
+return;
+let totalQty = 0;
+const activeKeys = getActiveBreadKeys();
+activeKeys.forEach(k => { totalQty += state.stock[k] ? state.stock[k].qty : 0; });
+document.getElementById('total-stock-count').innerText = totalQty;
+const proj = calculateProjections();
+// Órdenes
+const panel = document.getElementById('production-orders-panel');
+const list = document.getElementById('production-orders-list');
+list.innerHTML = '';
+if (proj.orders.length > 0) {
+panel.classList.remove('hidden');
+proj.orders.forEach(o => {
+const dateFmt = formatDate(o.date);
+list.innerHTML += `
+<div class="bg-white border border-red-200 p-3 rounded-xl shadow-sm flex flex-col gap-1">
+<p class="text-[10px] font-bold text-red-500 uppercase">${getBreadConfig(o.bread).name}</p>
+<p class="text-xs font-semibold text-neutral-800">Se acaba el <span class="text-red-600">${dateFmt}</span> (stock ${Math.max(0,Math.round(o.remaining))})</p>
+<button onclick="openScheduleModal('${o.bread}')" class="mt-1 text-[10px] bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 transition">📅 Programar amasada</button>
+</div>
+`;
+});
+} else {
+panel.classList.add('hidden');
+}
+// Tarjetas de producto
+grid.innerHTML = '';
+activeKeys.forEach(key => {
+const item = state.stock[key] || { qty: 0, margin: 5 };
+const config = getBreadConfig(key);
+const isEnabled = state.productSettings[key] && state.productSettings[key].enabled !== false;
+const margin = state.productSettings[key] ? state.productSettings[key].margin || 5 : 5;
+const isCritical = item.qty <= margin;
+const batchVal = state.tempBatchInputs[key] || config.defaultBatch || 20;
+let autonomyLabel = `<span class="text-emerald-600 font-bold">🟢 +45 días</span>`;
+if (isCritical) {
+autonomyLabel = `<span class="text-red-600 font-bold">⚠️ Bajo mínimos (${margin})</span>`;
+} else if (proj.autonomy[key]) {
+const [, m, d] = proj.autonomy[key].split('-');
+autonomyLabel = `<span class="text-amber-600 font-bold">🟡 Hasta ${d}/${m}</span>`;
+}
+const color = BREAD_COLORS[key] || { dot: 'bg-gray-400', text: 'text-gray-700', bg: 'bg-gray-50',
+border: 'border-gray-300' };
+grid.innerHTML += `
+<div class="product-card ${isEnabled ? '' : 'disabled'} bg-white border ${isCritical ? 'border-red-300' : 'border-bakery-border'} rounded-3xl p-5 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="text-xl font-serif font-bold text-bakery-primary">${config.name}</h3>
+<span class="text-[9px] ${isEnabled ? 'text-emerald-600' : 'text-neutral-400'} font-bold">${isEnabled ? '🟢 Activo' : '⛔ Inactivo'}</span>
+</div>
+<div class="text-[10px] mt-1 bg-neutral-50 p-1.5 rounded-lg border border-neutral-100 flex items-center justify-between">
+<span class="text-neutral-500 uppercase font-bold tracking-wide">Autonomía:</span>
+${autonomyLabel}
+</div>
+<div class="flex flex-col items-center mt-6 mb-4">
+<div class="flex items-baseline gap-2">
+<input type="number" value="${item.qty}" min="0" onchange="setDirectQty('${key}', this.value)"
+class="w-20 bg-transparent border-b-2 border-dashed border-neutral-300 ${isCritical ? 'text-bakery-danger border-red-300' : 'text-bakery-primary'} text-4xl font-black focus:outline-none text-center">
+<span class="text-xs text-neutral-400">/ ${margin}</span>
+</div>
+<span class="text-[9px] text-neutral-300 font-bold uppercase mt-1">Stock / Margen</span>
+</div>
+</div>
+<div class="pt-4 border-t border-bakery-border flex gap-2 items-end">
+<div class="w-16">
+<label class="block text-[8px] font-bold text-neutral-400 uppercase mb-1 text-center">Lote</label>
+<input type="number" id="batch-${key}" value="${batchVal}" onchange="updateTempBatch('${key}', this.value)" class="w-full py-1.5 border border-bakery-border rounded-lg text-xs font-bold text-center">
+</div>
+<button onclick="replenishBatch('${key}')" class="flex-1 bg-bakery-primary hover:bg-bakery-accent text-white py-2 rounded-xl text-xs font-bold transition">➕ Amasar</button>
+<button onclick="openScheduleModal('${key}')" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition" title="Programar amasada">📅</button>
+</div>
+</div>
+`;
+});
+}
+// ----- FUNCIONES DE STOCK -----
+function setDirectQty(k, v) {
+const newQty = Math.max(0, parseInt(v) || 0);
+if (newQty !== state.stock[k].qty) logActivity(`cambió ${getBreadConfig(k).name} a ${newQty} uds`);
+state.stock[k].qty = newQty;
+saveStateToCloud();
+renderStock();
+renderTodaySummary();
+}
+function updateTempBatch(k, v) { state.tempBatchInputs[k] = parseInt(v) || 1;
+saveStateToCloud(); }
+function replenishBatch(k) {
+const inputVal = parseInt(document.getElementById(`batch-${k}`).value) || getBreadConfig(k).defaultBatch || 20;
+state.stock[k].qty += inputVal;
+logActivity(`amasó un lote de ${getBreadConfig(k).name} (+${inputVal} uds)`);
+saveStateToCloud();
+renderStock();
+renderTodaySummary();
+}
+// ----- PROGRAMAR AMASADA (solo guarda la planificación, no suma stock) -----
+function openScheduleModal(breadKey) {
+document.getElementById('schedule-bread-key').value = breadKey;
+document.getElementById('schedule-product-name').innerText = getBreadConfig(breadKey).name;
+document.getElementById('schedule-qty').value = state.tempBatchInputs[breadKey] || getBreadConfig(breadKey)
+.defaultBatch || 20;
+const tomorrow = addDays(getTodayDateString(), 1);
+document.getElementById('schedule-date').value = tomorrow;
+document.getElementById('modal-schedule-bake').classList.remove('hidden');
+}
+function closeScheduleModal() { document.getElementById('modal-schedule-bake').classList.add('hidden'); }
+function saveScheduledBake() {
+const breadKey = document.getElementById('schedule-bread-key').value;
+const date = document.getElementById('schedule-date').value;
+const qty = parseInt(document.getElementById('schedule-qty').value) || 1;
+if (!date || !breadKey) return;
+if (!state.bakeSchedule[date]) state.bakeSchedule[date] = {};
+state.bakeSchedule[date][breadKey] = (state.bakeSchedule[date][breadKey] || 0) + qty;
+logActivity(`programó amasada de ${getBreadConfig(breadKey).name} (${qty} uds) para el ${formatDate(date)} (inicio)`);
+closeScheduleModal();
+saveStateToCloud();
+renderAll();
+}
+function getScheduledBakesForDate(dateStr) {
+return state.bakeSchedule[dateStr] || {};
+}
+// ----- COSECHAR AMASADA (sumar al stock y eliminar la programación) -----
+function harvestBake(dateStr, breadKey) {
+const scheduled = state.bakeSchedule[dateStr];
+if (!scheduled || !scheduled[breadKey]) return;
+const qty = scheduled[breadKey];
+// Sumar al stock
+if (state.stock[breadKey]) {
+state.stock[breadKey].qty += qty;
+logActivity(`cosechó amasada de ${getBreadConfig(breadKey).name} (+${qty} uds) del ${formatDate(dateStr)}`);
+}
+// Eliminar la entrada
+delete scheduled[breadKey];
+if (Object.keys(scheduled).length === 0) {
+delete state.bakeSchedule[dateStr];
+}
+saveStateToCloud();
+renderAll();
+// Cerrar modal si está abierto
+closeModal();
+}
+// ----- RENDER: CALENDARIO -----
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre",
+"Noviembre", "Diciembre"
+];
+function renderCalendar() {
+const grid = document.getElementById('calendar-grid');
+grid.innerHTML = '';
+document.getElementById('calendar-title').innerText = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+let firstDay = new Date(currentYear, currentMonth, 1).getDay();
+firstDay = firstDay === 0 ? 6 : firstDay - 1;
+const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+const todayStr = getTodayDateString();
+const proj = calculateProjections();
+const runOutByDate = {};
+proj.orders.forEach(o => {
+if (!runOutByDate[o.date]) runOutByDate[o.date] = [];
+runOutByDate[o.date].push(o.bread);
+});
+// Leyenda
+const legend = document.getElementById('autonomy-legend');
+const breadsWithAutonomy = Object.keys(proj.autonomy);
+if (breadsWithAutonomy.length) {
+legend.innerHTML = `<span class="text-[10px] font-bold text-neutral-400 uppercase self-center mr-1">🔚 Se agota:</span>` +
+breadsWithAutonomy.map(bk => {
+const c = BREAD_COLORS[bk] || { dot: 'bg-gray-400', text: 'text-gray-700', bg: 'bg-gray-50',
+border: 'border-gray-300' };
+const [, m, d] = proj.autonomy[bk].split('-');
+return `<span class="inline-flex items-center gap-1.5 text-[10px] font-bold ${c.text} ${c.bg} border ${c.border} px-2 py-1 rounded-full"><span class="w-2 h-2 rounded-full ${c.dot}"></span>${getShortName(bk)} · ${d}/${m}</span>`;
+}).join('');
+} else {
+legend.innerHTML = `<span class="text-[10px] text-emerald-600 font-bold">🟢 Todo el stock cubre los próximos 45 días</span>`;
+}
+for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="bg-neutral-50/40 rounded-2xl min-h-[100px]"></div>`;
+for (let day = 1; day <= daysInMonth; day++) {
+const dateStr =
+`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+const isException = state.plans[dateStr] && state.plans[dateStr].isException;
+const plan = getEffectivePlan(dateStr);
+const scheduledBakes = getScheduledBakesForDate(dateStr);
+const hasScheduledBake = Object.keys(scheduledBakes).length > 0;
+let sHtml = [];
+SERVICES_CONFIG.forEach(s => {
+if (plan[s.key] && plan[s.key].active) {
+let totalB = 0;
+if (plan[s.key].bread) Object.values(plan[s.key].bread).forEach(v => totalB += parseInt(v) ||
+0);
+if (totalB > 0) sHtml.push(
+`<div class="text-[9px] bg-white border border-bakery-border rounded px-1 py-0.5 flex justify-between shadow-sm"><span title="${s.name}">${s.icon}</span><span class="font-bold text-bakery-primary">${totalB}</span></div>`
+);
+}
+});
+let runOutHtml = '';
+const runOutBreads = runOutByDate[dateStr];
+if (runOutBreads && runOutBreads.length) {
+runOutHtml = `<div class="mt-1 flex flex-wrap gap-0.5">` + runOutBreads.map(bk => {
+const c = BREAD_COLORS[bk] || { dot: 'bg-gray-400', text: 'text-gray-700', bg: 'bg-gray-50',
+border: 'border-gray-300' };
+return `<span class="w-full text-[8px] font-bold ${c.text} ${c.bg} border ${c.border} rounded px-1 py-0.5 flex items-center gap-1 truncate" title="${getBreadConfig(bk).name} se agota"><span class="w-1.5 h-1.5 rounded-full ${c.dot} shrink-0"></span>${getShortName(bk)}</span>`;
+}).join('') + `</div>`;
+}
+let bakeHtml = '';
+if (hasScheduledBake) {
+const items = Object.entries(scheduledBakes).map(([bk, qty]) =>
+`${getShortName(bk)} (${qty})`).join(', ');
+bakeHtml =
+`<div class="mt-1 text-[8px] bg-blue-100 text-blue-800 rounded px-1 py-0.5 font-bold truncate" title="Amasada programada: ${items}">🧑‍🍳 ${items}</div>`;
+}
+const highlight = dateStr === todayStr ? 'ring-2 ring-bakery-accent border-bakery-accent' : (runOutBreads ?
+'border-red-200' : 'border-bakery-border');
+const bgType = isException ? 'bg-amber-50/40 border-amber-200' : (sHtml.length > 0 ? 'bg-white' :
+'bg-neutral-50/50');
+const bakeClass = hasScheduledBake ? 'calendar-day.has-bake' : '';
+grid.innerHTML += `
+<div onclick="openPlanModal('${dateStr}')" class="border ${highlight} ${bgType} ${bakeClass} rounded-2xl p-2 min-h-[115px] flex flex-col justify-between cursor-pointer hover:shadow-md transition">
+<div>
+<div class="flex justify-between items-start">
+<span class="font-bold text-sm ${dateStr === todayStr ? 'text-bakery-accent' : 'text-neutral-700'}">${day}</span>
+<span class="text-[8px] ${isException ? 'text-bakery-accent' : 'text-neutral-300'} font-bold">${isException ? '📌 Mod' : '⚙️ Auto'}</span>
+</div>
+<div class="mt-1 space-y-1">${sHtml.join('')}</div>
+</div>
+${runOutHtml}
+${bakeHtml}
+</div>
+`;
+}
+}
+function changeMonth(dir) { currentMonth += dir; if (currentMonth > 11) { currentMonth = 0;
+currentYear++; } else if (currentMonth < 0) { currentMonth = 11;
+currentYear--; }
+renderCalendar(); }
+function setTodayMonth() { const t = new Date();
+currentYear = t.getFullYear();
+currentMonth = t.getMonth();
+renderCalendar(); }
+// ----- RESUMEN DE HOY -----
+function renderTodaySummary() {
+const container = document.getElementById('today-summary');
+if (!container) return;
+const todayStr = getTodayDateString();
+const plan = getEffectivePlan(todayStr);
+const proj = calculateProjections();
+const todayLabel = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+let badges = [];
+SERVICES_CONFIG.forEach(s => {
+const svc = plan[s.key];
+if (svc && svc.active) {
+let details = [];
+if (svc.bread) Object.entries(svc.bread).forEach(([bk, qty]) => { if (qty > 0) details.push(
+`${qty} ${getShortName(bk)}`); });
+badges.push(
+`<span class="inline-flex items-center gap-1 bg-bakery-accentLight/60 text-bakery-primary text-[11px] font-semibold px-2.5 py-1.5 rounded-full border border-bakery-accent/10">${s.icon} ${s.name}${details.length ? ': ' + details.join(', ') : ''}</span>`
+);
+}
+});
+const runningOutToday = proj.orders.filter(o => o.date === todayStr).map(o => getShortName(o.bread));
+if (runningOutToday.length) {
+badges.push(
+`<span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-200">🥣 Toca amasar hoy: ${runningOutToday.join(', ')}</span>`
+);
+}
+const criticalNow = Object.entries(state.stock).filter(([k, i]) => {
+const margin = state.productSettings[k] ? state.productSettings[k].margin || 5 : 5;
+return i.qty <= margin;
+}).map(([k]) => getShortName(k));
+if (criticalNow.length) {
+badges.push(
+`<span class="inline-flex items-center gap-1 bg-red-50 text-bakery-danger text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-100">⚠️ Bajo mínimos: ${criticalNow.join(', ')}</span>`
+);
+}
+const todayBakes = getScheduledBakesForDate(todayStr);
+if (Object.keys(todayBakes).length) {
+const txt = Object.entries(todayBakes).map(([bk, qty]) => `${getShortName(bk)} (${qty})`).join(', ');
+badges.push(
+`<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-blue-200">🧑‍🍳 Amasada programada: ${txt}</span>`
+);
+}
+container.innerHTML = `
+<p class="text-[10px] uppercase tracking-wider font-bold text-neutral-400 mb-2">📅 Hoy · ${todayLabel}</p>
+<div class="flex flex-wrap gap-2">
+${badges.length ? badges.join('') : '<span class="text-xs text-neutral-400">Nada planificado ni pendiente para hoy. 🎉</span>'}
+</div>
+`;
+}
+// ----- MODAL: REGLAS SEMANALES (nuevo diseño por columnas de servicios) -----
+function openWeeklyRulesModal() {
+renderWeeklyRules();
+document.getElementById('modal-weekly-rules').classList.remove('hidden');
+}
+function closeWeeklyRulesModal() { document.getElementById('modal-weekly-rules').classList.add('hidden'); }
+function renderWeeklyRules() {
+const container = document.getElementById('weekly-rules-container');
+container.innerHTML = '';
+const activeKeys = getActiveBreadKeys();
+const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+// Crear una columna por cada servicio
+const cols = SERVICES_CONFIG.map(svcConf => {
+const colDiv = document.createElement('div');
+colDiv.className = 'weekly-service-col';
+let html = `<h4>${svcConf.icon} ${svcConf.name}</h4>`;
+// Para cada día, mostrar una fila con los inputs de cada pan
+for (let dow = 0; dow <= 6; dow++) {
+const dayData = state.weeklyRules[dow] || {};
+const svc = dayData[svcConf.key] || { active: false, bread: {} };
+const isActive = svc.active;
+html += `
+<div class="weekly-day-row">
+<span class="day-label">${dayNames[dow]}</span>
+<div class="day-breads">
+<label class="flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+<input type="checkbox" class="weekly-svc-toggle" data-dow="${dow}" data-svc="${svcConf.key}" ${isActive?'checked':''}>
+<span>Activo</span>
+</label>
+${activeKeys.map(bk => {
+const val = svc.bread && svc.bread[bk] ? svc.bread[bk] : 0;
+return `<label><span>${getShortName(bk)}</span><input type="number" class="weekly-bread-input" data-dow="${dow}" data-svc="${svcConf.key}" data-bread="${bk}" value="${val}" min="0" ${isActive?'':'disabled'}></label>`;
+}).join('')}
+</div>
+</div>
+`;
+}
+colDiv.innerHTML = html;
+return colDiv;
+});
+// Añadir las columnas al contenedor en un grid
+const gridDiv = document.createElement('div');
+gridDiv.className = 'weekly-rules-grid';
+cols.forEach(col => gridDiv.appendChild(col));
+container.appendChild(gridDiv);
+// Event listeners para habilitar/deshabilitar inputs al toggle
+document.querySelectorAll('.weekly-svc-toggle').forEach(el => {
+el.addEventListener('change', function() {
+const dow = this.dataset.dow;
+const svc = this.dataset.svc;
+const isChecked = this.checked;
+const inputs = document.querySelectorAll(
+`.weekly-bread-input[data-dow="${dow}"][data-svc="${svc}"]`);
+inputs.forEach(inp => { inp.disabled = !isChecked; });
+});
+});
+}
+function saveWeeklyRules() {
+const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+for (let dow = 0; dow <= 6; dow++) {
+if (!state.weeklyRules[dow]) state.weeklyRules[dow] = {};
+SERVICES_CONFIG.forEach(svcConf => {
+const toggle = document.querySelector(
+`.weekly-svc-toggle[data-dow="${dow}"][data-svc="${svcConf.key}"]`);
+const isActive = toggle ? toggle.checked : false;
+if (!state.weeklyRules[dow][svcConf.key]) state.weeklyRules[dow][svcConf.key] = { active: false,
+bread: {} };
+state.weeklyRules[dow][svcConf.key].active = isActive;
+if (!state.weeklyRules[dow][svcConf.key].bread) state.weeklyRules[dow][svcConf.key].bread = {};
+const inputs = document.querySelectorAll(
+`.weekly-bread-input[data-dow="${dow}"][data-svc="${svcConf.key}"]`);
+inputs.forEach(inp => {
+const bk = inp.dataset.bread;
+state.weeklyRules[dow][svcConf.key].bread[bk] = isActive ? (parseInt(inp.value) || 0) :
+0;
+});
+});
+}
+logActivity(`actualizó las reglas fijas de toda la semana`);
+closeWeeklyRulesModal();
+saveStateToCloud();
+renderAll();
+}
+// ----- MODAL: GESTIÓN DE PRODUCTOS -----
+function openProductsModal() {
+renderProductsList();
+document.getElementById('modal-products').classList.remove('hidden');
+}
+function closeProductsModal() { document.getElementById('modal-products').classList.add('hidden'); }
+function renderProductsList() {
+const container = document.getElementById('products-list-container');
+container.innerHTML = '';
+const allKeys = Object.keys(state.stock);
+allKeys.forEach(key => {
+const config = getBreadConfig(key);
+const isCustom = !!state.customProducts[key];
+const settings = state.productSettings[key] || { enabled: true, margin: 5 };
+const margin = settings.margin || 5;
+const enabled = settings.enabled !== false;
+container.innerHTML += `
+<div class="flex items-center gap-3 bg-neutral-50 p-3 rounded-xl border border-bakery-border">
+<div class="flex-1 min-w-0">
+<p class="font-bold text-sm text-bakery-primary">${config.name}</p>
+<p class="text-[10px] text-neutral-400">${config.type || 'Personalizado'} · Lote por defecto: ${config.defaultBatch || 20}</p>
+</div>
+<div class="flex items-center gap-3">
+<label class="flex items-center gap-1 text-[10px] font-bold text-neutral-500">
+Margen
+<input type="number" class="product-margin-input w-12 p-1 border border-bakery-border rounded-lg text-xs text-center" data-key="${key}" value="${margin}" min="0">
+</label>
+<label class="flex items-center gap-1 text-[10px] font-bold text-neutral-500 cursor-pointer">
+<input type="checkbox" class="product-enabled-toggle" data-key="${key}" ${enabled?'checked':''}>
+${enabled?'🟢 Activo':'⛔ Inactivo'}
+</label>
+${isCustom ? `<button onclick="removeCustomProduct('${key}')" class="text-red-500 hover:text-red-700 text-sm font-bold">✕</button>` : ''}
+</div>
+</div>
+`;
+});
+}
+function saveProductSettings() {
+document.querySelectorAll('.product-margin-input').forEach(inp => {
+const key = inp.dataset.key;
+const val = parseInt(inp.value) || 5;
+if (!state.productSettings[key]) state.productSettings[key] = { enabled: true, margin: 5 };
+state.productSettings[key].margin = val;
+if (state.stock[key]) state.stock[key].margin = val;
+});
+document.querySelectorAll('.product-enabled-toggle').forEach(chk => {
+const key = chk.dataset.key;
+if (!state.productSettings[key]) state.productSettings[key] = { enabled: true, margin: 5 };
+state.productSettings[key].enabled = chk.checked;
+});
+logActivity(`actualizó la configuración de productos`);
+closeProductsModal();
+saveStateToCloud();
+renderAll();
+}
+function addCustomProduct() {
+const name = document.getElementById('new-product-name').value.trim();
+const type = document.getElementById('new-product-type').value;
+const batch = parseInt(document.getElementById('new-product-batch').value) || 20;
+if (!name) return;
+const key = 'custom_' + name.toLowerCase().replace(/\s/g, '_') + '_' + Date.now();
+state.customProducts[key] = { name, type, defaultBatch: batch };
+state.stock[key] = { qty: 0, margin: 5 };
+state.productSettings[key] = { enabled: true, margin: 5 };
+state.tempBatchInputs[key] = batch;
+logActivity(`añadió un nuevo producto: ${name}`);
+document.getElementById('new-product-name').value = '';
+renderProductsList();
+saveStateToCloud();
+renderAll();
+}
+function removeCustomProduct(key) {
+if (!confirm(`¿Eliminar "${getBreadConfig(key).name}"?`)) return;
+delete state.customProducts[key];
+delete state.stock[key];
+delete state.productSettings[key];
+delete state.tempBatchInputs[key];
+logActivity(`eliminó el producto personalizado ${getBreadConfig(key).name}`);
+saveStateToCloud();
+renderProductsList();
+renderAll();
+}
+// ----- MODAL: PLAN DIARIO (excepción) + cosecha de amasadas -----
+let currentDateModal = '';
+function openPlanModal(dateStr) {
+currentDateModal = dateStr;
+const isException = state.plans[dateStr] && state.plans[dateStr].isException;
+const [y, m, d] = dateStr.split('-');
+document.getElementById('modal-date-title').innerText = `${d}/${m}/${y}`;
+document.getElementById('exception-banner').style.display = isException ? 'flex' : 'none';
+document.getElementById('modal-date-subtitle').innerText = isException ? "Viendo Excepción Manual" :
+"Viendo Regla Automática (al guardar crearás excepción)";
+// Mostrar amasadas programadas para este día
+const scheduled = getScheduledBakesForDate(dateStr);
+const list = document.getElementById('scheduled-bakes-list');
+const harvestArea = document.getElementById('harvest-bakes-area');
+if (Object.keys(scheduled).length) {
+list.innerHTML = Object.entries(scheduled).map(([bk, qty]) =>
+`<span class="bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">${getBreadConfig(bk).name} (${qty})</span>`
+).join(' ');
+// Botón para cosechar cada una
+harvestArea.innerHTML = Object.entries(scheduled).map(([bk, qty]) => `
+<div class="flex items-center gap-2 mt-1">
+<span class="text-xs font-bold">${getBreadConfig(bk).name} (${qty} uds)</span>
+<button onclick="harvestBake('${dateStr}','${bk}')" class="btn-harvest">✅ Registrar producción</button>
+</div>
+`).join('');
+} else {
+list.innerHTML = '<span class="text-neutral-400">Ninguna amasada programada.</span>';
+harvestArea.innerHTML = '';
+}
+generateServicesHtml('modal-services-container', getEffectivePlan(dateStr), 'plan');
+document.getElementById('modal-plan').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal-plan').classList.add('hidden'); }
+function generateServicesHtml(containerId, servicesData, prefix) {
+const container = document.getElementById(containerId);
+container.innerHTML = '';
+const activeKeys = getActiveBreadKeys();
+SERVICES_CONFIG.forEach(svcConf => {
+const svc = servicesData[svcConf.key] || { active: false, bread: {} };
+let bHtml = '';
+activeKeys.forEach(bKey => {
+const val = svc.bread ? (svc.bread[bKey] || 0) : 0;
+bHtml += `
+<div class="flex items-center justify-between gap-1 bg-white p-2 rounded-xl border border-neutral-100">
+<span class="text-[10px] font-bold truncate">${getBreadConfig(bKey).name}</span>
+<input type="number" id="${prefix}-${svcConf.key}-${bKey}" value="${val}" min="0" onfocus="this.select()" class="w-12 h-7 text-center text-xs font-bold border border-bakery-border rounded-lg bg-neutral-50 focus:bg-white focus:border-bakery-accent">
+</div>`;
+});
+container.innerHTML += `
+<div class="border-2 ${svcConf.color} rounded-2xl overflow-hidden mb-3">
+<div class="p-3 bg-white flex justify-between items-center">
+<div class="flex items-center gap-2">
+<span class="text-xl">${svcConf.icon}</span>
+<h4 class="font-bold text-sm text-neutral-800">${svcConf.name}</h4>
+</div>
+<label class="flex items-center gap-1.5 cursor-pointer">
+<span class="text-[10px] font-bold text-neutral-400 uppercase" id="${prefix}-label-${svcConf.key}">${svc.active?'Activo':'Inactivo'}</span>
+<input type="checkbox" id="${prefix}-check-${svcConf.key}" ${svc.active?'checked':''} onchange="togglePanelUI('${prefix}', '${svcConf.key}')" class="w-5 h-5 accent-bakery-accent rounded">
+</label>
+</div>
+<div id="${prefix}-panel-${svcConf.key}" class="${svc.active?'block':'hidden'} p-3 border-t border-neutral-100 bg-neutral-50">
+<div class="grid grid-cols-2 gap-2">${bHtml}</div>
+</div>
+</div>`;
+});
+}
+function togglePanelUI(prefix, key) {
+const chk = document.getElementById(`${prefix}-check-${key}`).checked;
+document.getElementById(`${prefix}-label-${key}`).innerText = chk ? 'Activo' : 'Inactivo';
+document.getElementById(`${prefix}-panel-${key}`).className = chk ? 'block p-3 border-t border-neutral-100 bg-neutral-50' :
+'hidden';
+}
+function savePlan() {
+const dateStr = currentDateModal;
+if (!state.plans[dateStr]) state.plans[dateStr] = {};
+state.plans[dateStr].isException = true;
+state.plans[dateStr].services = {};
+let summary = [];
+const activeKeys = getActiveBreadKeys();
+SERVICES_CONFIG.forEach(s => {
+const isActive = document.getElementById(`plan-check-${s.key}`).checked;
+state.plans[dateStr].services[s.key] = { active: isActive, bread: {} };
+activeKeys.forEach(bk => {
+state.plans[dateStr].services[s.key].bread[bk] = isActive ? (parseInt(document
+.getElementById(`plan-${s.key}-${bk}`).value) || 0) : 0;
+});
+if (isActive) {
+const details = Object.entries(state.plans[dateStr].services[s.key].bread).filter(([, q]) => q >
+0).map(([bk, q]) => `${q} ${getShortName(bk)}`).join(', ');
+summary.push(details ? `${s.name} (${details})` : s.name);
+}
+});
+const [, m, d] = dateStr.split('-');
+logActivity(summary.length ? `planificó una excepción el ${d}/${m}: ${summary.join(' + ')}` :
+`vació la planificación del ${d}/${m}`);
+closeModal();
+saveStateToCloud();
+renderAll();
+}
+function revertToRule() {
+const dateStr = currentDateModal;
+const [, m, d] = dateStr.split('-');
+delete state.plans[dateStr];
+logActivity(`quitó la excepción manual del ${d}/${m} (vuelve a la regla automática)`);
+closeModal();
+saveStateToCloud();
+renderAll();
+}
+// ----- NAVEGACIÓN -----
+function switchView(view) {
+const isS = view === 'stock';
+document.getElementById('view-stock').classList.toggle('hidden', !isS);
+document.getElementById('view-calendar').classList.toggle('hidden', isS);
+document.getElementById('btn-stock').className = isS ?
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+document.getElementById('btn-calendar').className = !isS ?
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+renderAll();
+}
+// ----- RENDER ALL -----
+function renderAll() { renderStock();
+renderCalendar();
+renderTodaySummary(); }
+// ----- INICIO -----
+window.onload = function() {
+initRealtimeSync();
+ensureUserName();
+setTimeout(() => { checkTomorrowAlert(); }, 1000);
+};
+</script>
+</body>
+</html>
