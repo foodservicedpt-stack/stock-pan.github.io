@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock & Amasado v2.2 — Obrador Colaborativo</title>
-    <meta name="description" content="Panel colaborativo: gestiona productos, reglas semanales, programa amasadas y controla márgenes." />
+    <title>Stock & Amasado v2.3.1 — Obrador Colaborativo</title>
+    <meta name="description" content="Panel colaborativo v2.3.1: gestiona productos, reglas semanales, programa amasadoras y controla márgenes." />
     <script src="https://cdn.tailwindcss.com">
     </script>
     <script>
@@ -12,7 +12,9 @@
             theme: {
                 extend: {
                     colors: {
-                        bakery: { bg: '#FAF8F5', card: '#FFFDFB', primary: '#4A2C11', accent: '#8B5A2B', accentLight: '#F5EBE1', danger: '#A83232', success: '#2E7D32', border: '#EBE5DF' }
+                        bakery: { bg: '#FAF8F5', card: '#FFFDFB', primary: '#4A2C11', accent: '#8B5A2B', accentLight: '#F5EBE1', danger: '#A83232', success: '#2E7D32', border: '#EBE5DF' },
+                        orange: { 400: '#FB923C', 500: '#F97316', 600: '#EA580C' },
+                        blue: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 600: '#2563EB' }
                     },
                     animation: { 'fade-in': 'fadeIn 0.35s ease-out both' },
                     keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(6px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
@@ -21,6 +23,7 @@
         }
     </script>
     <style>
+        /* Estilos (incluidos todos) */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -192,10 +195,156 @@
                 background: #dbeafe;
                 color: #1e40af;
             }
+            .calendar-list-item .day-details .pending-bake {
+                background: #ffedd5;
+                color: #9a3412;
+            }
             .weekly-rules-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
+        }
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            transition: right 0.3s ease;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .slide-panel.open {
+            right: 0;
+        }
+        .slide-panel .close-btn {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: flex-end;
+            border-bottom: 1px solid #ebe5df;
+            margin-bottom: 1rem;
+        }
+        .slide-panel .service-group {
+            border: 1px solid #ebe5df;
+            border-radius: 12px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .slide-panel .service-group .svc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slide-panel .service-group .svc-breads {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.3rem 0.5rem;
+            margin-top: 0.3rem;
+        }
+        .slide-panel .service-group .svc-breads label {
+            font-size: 0.7rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slide-panel .service-group .svc-breads input {
+            width: 44px;
+            padding: 0.1rem 0.2rem;
+            border-radius: 6px;
+            border: 1px solid #d5c9be;
+            text-align: center;
+            font-size: 0.7rem;
+        }
+        .slide-panel .btn-save-quick {
+            width: 100%;
+            padding: 0.6rem;
+            background: #8B5A2B;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+        .slide-panel .btn-save-quick:hover {
+            background: #4A2C11;
+        }
+        .slide-panel .exception-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-week-ok {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .badge-week-warn {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.6rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .pending-count {
+            background: #ef4444;
+            color: white;
+            border-radius: 9999px;
+            padding: 0.1rem 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            margin-left: 0.3rem;
+        }
+        .week-plan {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid #ebe5df;
+        }
+        .week-plan .week-day {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #f0ece8;
+            font-size: 0.8rem;
+        }
+        .week-plan .week-day .day-name {
+            font-weight: 600;
+            min-width: 60px;
+        }
+        .week-plan .week-day .day-consumo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        .week-plan .week-day .day-consumo .prod-badge {
+            background: #f3f4f6;
+            padding: 0.1rem 0.4rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+        }
+        .week-plan .week-day .day-bake {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.1rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js">
@@ -203,9 +352,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js">
     </script>
 </head>
-<body class="text-neutral-800 min-h-screen pb-16">
+<body>
 
-    <!-- BANNER DE CONEXIÓN -->
+    <!-- ===== BANNER DE CONEXIÓN ===== -->
     <div id="connection-banner" class="glass sticky top-0 z-40 border-b border-amber-100/70 px-4 sm:px-6 py-2.5 flex flex-wrap gap-2 justify-between items-center text-xs font-semibold text-amber-900 transition-all duration-300">
         <div class="flex items-center gap-2">
             <span id="connection-dot" class="w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse"></span>
@@ -213,37 +362,52 @@
         </div>
         <div class="flex items-center gap-3">
             <span id="sync-status" class="text-[10px] text-amber-700 font-mono">Iniciando...</span>
+            <span id="pending-badge" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
             <button onclick="renderAll()" class="bg-white/80 hover:bg-white text-[10px] px-2.5 py-1 rounded-md border border-amber-200 transition">🔄 Refrescar</button>
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- ===== HEADER ===== -->
     <header class="max-w-6xl mx-auto px-6 pt-10 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador Colaborativo v2.2</span>
+                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador Colaborativo v2.3.1</span>
             </div>
             <h1 class="text-5xl md:text-6xl font-bold grad-text mt-3 leading-[1.05] tracking-tight">Stock &amp; Amasado</h1>
-            <p class="text-xs text-neutral-500 mt-2">Sincronizado en tiempo real · Planifica y registra tus amasadas fácilmente.</p>
+            <p class="text-xs text-neutral-500 mt-2">Sincronizado en tiempo real · Planifica y registra tus amasadoras fácilmente.</p>
         </div>
         <div class="flex flex-wrap gap-1.5 bg-neutral-200/50 p-1.5 rounded-2xl shadow-inner">
             <button onclick="switchView('stock')" id="btn-stock" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100">📦 Stock</button>
+            <button onclick="switchView('week')" id="btn-week" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Semana</button>
             <button onclick="switchView('calendar')" id="btn-calendar" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Calendario</button>
             <button onclick="openWeeklyRulesModal()" class="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition grad-accent text-white shadow-sm hover:opacity-90 flex items-center gap-1">⚙️ Reglas Semanales</button>
             <button onclick="openProductsModal()" class="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary border border-neutral-200 hover:bg-neutral-50 shadow-sm">📦 Gestionar Productos</button>
         </div>
     </header>
 
-    <!-- BARRA RÁPIDA -->
+    <!-- ===== BARRA RÁPIDA ===== -->
     <div class="max-w-6xl mx-auto px-6 flex flex-wrap gap-2 -mt-1 mb-2">
         <button onclick="openActivityModal()" class="flex items-center gap-1 text-xs font-bold text-bakery-primary bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">🕓 Actividad</button>
         <button onclick="openNameModal()" id="btn-user-name" class="flex items-center gap-1 text-xs font-bold text-neutral-500 bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">👤 <span id="btn-user-name-label">Identificarme</span></button>
+        <span id="pending-badge-header" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
     </div>
 
     <hr class="border-bakery-border max-w-6xl mx-auto my-2 px-6">
 
-    <!-- NOTIFICACIONES (mermas automáticas) -->
-    <div class="max-w-6xl mx-auto px-6 mt-4 hidden" id="notification-panel">
+    <!-- ===== PANEL DE PREVISIÓN DE MERMAS ===== -->
+    <div id="depletion-preview" class="max-w-6xl mx-auto px-6 mt-4 hidden">
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
+            <h4 class="text-amber-900 font-bold text-sm flex items-center gap-2">📉 Previsión de mermas para mañana</h4>
+            <p id="depletion-preview-text" class="text-xs text-amber-800 mt-1 whitespace-pre-line"></p>
+            <div class="flex gap-3 mt-3">
+                <button onclick="applyDepletions()" class="bg-amber-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-700">✅ Aplicar mermas</button>
+                <button onclick="skipDepletions()" class="border border-amber-300 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100">⏭️ Omitir hoy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NOTIFICACIONES ===== -->
+    <div id="notification-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
         <div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
             <span class="text-lg">📉</span>
             <div class="flex-1 text-sm text-orange-950">
@@ -254,29 +418,28 @@
         </div>
     </div>
 
-    <!-- PANEL DE REGISTRO DE PRODUCCIÓN (amasadas pendientes de cosechar) -->
+    <!-- ===== PANEL DE AMASADORAS PENDIENTES ===== -->
     <div id="harvest-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
         <div class="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-sm">
-            <h4 class="text-green-900 font-bold text-sm flex items-center gap-2">🧑‍🍳 Amasadas pendientes de registrar</h4>
+            <h4 class="text-green-900 font-bold text-sm flex items-center gap-2">🧑‍🍳 Amasadoras pendientes de registrar</h4>
             <div id="harvest-list" class="mt-2 flex flex-wrap gap-3"></div>
         </div>
     </div>
 
-    <!-- AVISO SUAVE DE PRÓXIMA AMASADA (basado en margen) -->
+    <!-- ===== AVISO SUAVE ===== -->
     <div id="gentle-bake-alert" class="max-w-6xl mx-auto px-6 mt-2 hidden">
         <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3 text-xs text-amber-800 flex items-center gap-2">
             <span>⏳</span>
-            <span id="gentle-alert-text">Necesitas iniciar una amasada pronto para no romper el stock de seguridad.</span>
+            <span id="gentle-alert-text">Necesitas iniciar una amasadora pronto para no romper el stock de seguridad.</span>
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- ===== MAIN ===== -->
     <main class="max-w-6xl mx-auto px-6 mt-6">
 
         <!-- VISTA STOCK -->
         <section id="view-stock" class="space-y-6">
             <div id="today-summary" class="glass border border-bakery-border rounded-3xl p-5 shadow-sm"></div>
-
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="text-xs font-semibold text-neutral-400" id="last-updated-time">Sincronizando estado...</div>
                 <div class="bg-white border border-bakery-border rounded-2xl px-6 py-3 flex gap-8 shadow-sm">
@@ -286,9 +449,14 @@
                     </div>
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="stock-grid"></div>
+        </section>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="stock-grid">
-                <!-- Tarjetas de producto renderizadas por JS -->
+        <!-- VISTA SEMANA -->
+        <section id="view-week" class="hidden space-y-4">
+            <div class="week-plan">
+                <h3 class="text-lg font-serif font-bold text-bakery-primary mb-3">📅 Planificación de la semana</h3>
+                <div id="week-plan-container" class="space-y-2"></div>
             </div>
         </section>
 
@@ -301,7 +469,8 @@
                         <p class="text-xs text-neutral-400 mt-1 flex gap-4">
                             <span><span class="opacity-50">⚙️ Auto</span> = Regla semanal</span>
                             <span><span class="text-bakery-accent font-bold">📌 Modificado</span> = Excepción manual</span>
-                            <span><span class="text-blue-600 font-bold">🧑‍🍳</span> = Amasada programada</span>
+                            <span><span class="text-blue-600 font-bold">🧑‍🍳</span> = Amasadora programada</span>
+                            <span><span class="text-orange-500 font-bold">⏳</span> = Pendiente de registrar</span>
                         </p>
                     </div>
                     <div class="flex gap-2">
@@ -310,38 +479,40 @@
                         <button onclick="changeMonth(1)" class="p-2 border border-bakery-border hover:bg-neutral-50 rounded-xl font-bold text-neutral-600">▶</button>
                     </div>
                 </div>
-
                 <div id="autonomy-legend" class="flex flex-wrap gap-2 mb-4 pb-4 border-b border-neutral-100"></div>
-
-                <!-- Grid para escritorio -->
                 <div class="calendar-grid-view grid grid-cols-7 text-center font-bold text-[10px] uppercase tracking-wider text-neutral-400 mb-2 py-2 border-b border-neutral-100">
                     <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
                 </div>
                 <div class="calendar-grid-view grid grid-cols-7 gap-2" id="calendar-grid"></div>
-
-                <!-- Vista lista para móvil -->
                 <div class="calendar-list-view" id="calendar-list"></div>
             </div>
         </section>
     </main>
 
+    <!-- ===== PANEL LATERAL RÁPIDO ===== -->
+    <div id="quick-panel" class="slide-panel">
+        <div class="close-btn">
+            <button onclick="closeQuickPanel()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl">✕</button>
+        </div>
+        <h3 id="quick-panel-title" class="text-xl font-serif font-bold text-bakery-primary mb-2">Editar día</h3>
+        <p id="quick-panel-sub" class="text-xs text-neutral-400 mb-3">Modifica los consumos (se creará una excepción manual).</p>
+        <div id="quick-panel-services"></div>
+        <button onclick="saveQuickPlan()" class="btn-save-quick">💾 Guardar cambios</button>
+    </div>
+
     <!-- ===== MODALES ===== -->
 
-    <!-- MODAL: REGLAS SEMANALES -->
+    <!-- REGLAS SEMANALES -->
     <div id="modal-weekly-rules" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-6xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[96vh] overflow-y-auto">
             <div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
                 <div>
                     <h3 class="text-2xl font-serif font-bold text-bakery-primary">📅 Reglas Fijas — Semana Completa</h3>
-                    <p class="text-[10px] text-neutral-400">Configura el consumo base para cada servicio y día. Las excepciones manuales tienen prioridad.</p>
+                    <p class="text-[10px] text-neutral-400">Configura el consumo base para cada servicio y día.</p>
                 </div>
                 <button onclick="closeWeeklyRulesModal()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl p-1">✕</button>
             </div>
-
-            <div id="weekly-rules-container" class="py-4">
-                <!-- Se renderiza por JS -->
-            </div>
-
+            <div id="weekly-rules-container" class="py-4"></div>
             <div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white">
                 <button onclick="closeWeeklyRulesModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cancelar</button>
                 <button onclick="saveWeeklyRules()" class="flex-1 py-3 rounded-xl bg-bakery-primary text-white font-semibold hover:bg-bakery-accent transition text-sm">💾 Guardar todas las reglas</button>
@@ -349,7 +520,7 @@
         </div>
     </div>
 
-    <!-- MODAL: GESTIÓN DE PRODUCTOS -->
+    <!-- PRODUCTOS -->
     <div id="modal-products" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
         <div class="bg-white w-full max-w-3xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[96vh] overflow-y-auto">
             <div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
@@ -359,14 +530,10 @@
                 </div>
                 <button onclick="closeProductsModal()" class="text-neutral-400 hover:text-neutral-600 font-bold text-xl p-1">✕</button>
             </div>
-
-            <div id="products-list-container" class="py-4 space-y-3">
-                <!-- Renderizado por JS -->
-            </div>
-
+            <div id="products-list-container" class="py-4 space-y-3"></div>
             <div class="pt-4 border-t border-bakery-border">
                 <div class="flex gap-3">
-                    <input type="text" id="new-product-name" placeholder="Nombre del pan (ej. Chapata)" class="flex-1 px-3 py-2 border border-bakery-border rounded-xl text-sm">
+                    <input type="text" id="new-product-name" placeholder="Nombre del pan" class="flex-1 px-3 py-2 border border-bakery-border rounded-xl text-sm">
                     <select id="new-product-type" class="px-3 py-2 border border-bakery-border rounded-xl text-sm bg-white">
                         <option value="Blanco">Blanco</option>
                         <option value="Integral">Integral</option>
@@ -375,9 +542,8 @@
                     <input type="number" id="new-product-batch" placeholder="Lote" value="20" class="w-20 px-2 py-2 border border-bakery-border rounded-xl text-sm text-center">
                     <button onclick="addCustomProduct()" class="px-4 py-2 rounded-xl bg-bakery-accent text-white font-bold text-sm hover:opacity-90">➕ Añadir</button>
                 </div>
-                <p class="text-[9px] text-neutral-400 mt-2">Los productos personalizados se guardan en la nube. Puedes eliminarlos desde aquí.</p>
+                <p class="text-[9px] text-neutral-400 mt-2">Los productos personalizados se guardan en la nube.</p>
             </div>
-
             <div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white mt-4">
                 <button onclick="closeProductsModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cerrar</button>
                 <button onclick="saveProductSettings()" class="flex-1 py-3 rounded-xl bg-bakery-primary text-white font-semibold hover:bg-bakery-accent transition text-sm">💾 Guardar cambios</button>
@@ -385,11 +551,11 @@
         </div>
     </div>
 
-    <!-- MODAL: PLANIFICAR AMASADA (solo fecha) -->
+    <!-- PROGRAMAR AMASADORA -->
     <div id="modal-schedule-bake" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[55] backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-bakery-border">
-            <h3 class="text-xl font-serif font-bold text-bakery-primary mb-1">🧑‍🍳 Programar Amasada</h3>
-            <p class="text-xs text-neutral-400 mb-4">Elige el día en que empezarás a amasar. Al día siguiente podrás registrar la producción real.</p>
+            <h3 class="text-xl font-serif font-bold text-bakery-primary mb-1">🧑‍🍳 Programar Amasadora</h3>
+            <p class="text-xs text-neutral-400 mb-4">Elige el día de inicio. Al día siguiente podrás registrar la producción real.</p>
             <input type="hidden" id="schedule-bread-key">
             <div class="space-y-3">
                 <div>
@@ -397,7 +563,7 @@
                     <p id="schedule-product-name" class="font-bold text-bakery-primary"></p>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-neutral-500">Fecha de inicio de amasada</label>
+                    <label class="block text-[10px] font-bold text-neutral-500">Fecha de inicio</label>
                     <input type="date" id="schedule-date" class="w-full p-3 border border-bakery-border rounded-xl text-sm">
                 </div>
             </div>
@@ -408,32 +574,7 @@
         </div>
     </div>
 
-    <!-- MODAL: PLAN DIARIO (excepción) -->
-    <div id="modal-plan" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
-        <div class="bg-white w-full max-w-2xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-start pb-4 border-b border-bakery-border sticky top-0 bg-white z-10">
-                <div>
-                    <h3 id="modal-date-title" class="text-2xl font-serif font-bold text-bakery-primary capitalize">Planificación Diaria</h3>
-                    <p class="text-[10px] text-neutral-400 mt-1" id="modal-date-subtitle">Modificando consumo para este día.</p>
-                </div>
-                <button onclick="closeModal()" class="text-neutral-400 font-bold text-xl p-1">✕</button>
-            </div>
-
-            <div id="exception-banner" class="hidden mt-4 bg-amber-50 text-amber-800 text-xs font-bold p-3 rounded-xl border border-amber-200 flex justify-between items-center">
-                <span>📌 Este día tiene una modificación manual.</span>
-                <button onclick="revertToRule()" class="px-3 py-1 bg-white rounded border border-amber-300 hover:bg-amber-100 transition">Volver a regla automática</button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto py-4 space-y-4 pr-1" id="modal-services-container"></div>
-
-            <div class="pt-4 border-t border-bakery-border flex gap-3 sticky bottom-0 bg-white">
-                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border border-bakery-border font-semibold hover:bg-neutral-50 transition text-sm">Cancelar</button>
-                <button onclick="savePlan()" class="flex-1 py-3 rounded-xl bg-bakery-accent text-white font-semibold hover:bg-bakery-primary transition text-sm flex items-center justify-center gap-2">💾 Guardar como Excepción</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: NOMBRE -->
+    <!-- NOMBRE -->
     <div id="modal-name" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-bakery-border text-center">
             <div class="text-4xl mb-2">👋</div>
@@ -447,7 +588,7 @@
         </div>
     </div>
 
-    <!-- MODAL: ACTIVIDAD -->
+    <!-- ACTIVIDAD -->
     <div id="modal-activity" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh] border border-bakery-border">
             <div class="flex justify-between items-center pb-4 border-b border-bakery-border">
@@ -462,7 +603,7 @@
 
     <!-- ============================== JAVASCRIPT ============================== -->
     <script>
-        // ----- CONFIGURACIÓN BASE -----
+        // ----- CONFIGURACIÓN -----
         const SERVICES_CONFIG = [
             { key: 'desayuno', name: 'Desayuno', icon: '☕', color: 'border-amber-200 bg-amber-50/10' },
             { key: 'comida', name: 'Comida', icon: '☀️', color: 'border-orange-200 bg-orange-50/10' },
@@ -546,125 +687,6 @@
         }
         initDefaultState();
 
-        // ----- IDENTIDAD -----
-        function updateUserNameButton() {
-            const label = document.getElementById('btn-user-name-label');
-            if (label) label.innerText = currentUserName || 'Identificarme';
-        }
-
-        function ensureUserName() { updateUserNameButton(); if (!currentUserName) openNameModal(); }
-
-        function openNameModal() { document.getElementById('input-user-name').value = currentUserName;
-            document.getElementById('modal-name').classList.remove('hidden'); }
-
-        function closeNameModal() { document.getElementById('modal-name').classList.add('hidden'); }
-
-        function saveUserName() { const val = document.getElementById('input-user-name').value.trim(); if (val) { currentUserName = val
-                    .slice(0, 24);
-                localStorage.setItem('panaderia_user_name', currentUserName);
-                updateUserNameButton(); }
-            closeNameModal(); }
-
-        // ----- ACTIVIDAD -----
-        function logActivity(text) {
-            activityRef.push({
-                user: currentUserName || 'Alguien',
-                text: text,
-                ts: firebase.database.ServerValue.TIMESTAMP
-            }).catch(() => {});
-        }
-
-        function renderActivityLog(entries) {
-            lastActivityEntries = entries;
-            const list = document.getElementById('activity-log-list');
-            if (!list) return;
-            if (!entries.length) { list.innerHTML = '<p class="text-xs text-neutral-400 text-center py-6">Sin actividad.</p>'; return; }
-            list.innerHTML = entries.map(e => `
-                <div class="flex items-start gap-2 text-xs bg-neutral-50 rounded-xl px-3 py-2 border border-neutral-100">
-                    <span class="text-base leading-none">👤</span>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-neutral-700 break-words"><span class="font-bold text-bakery-primary">${escapeHtml(e.user)}</span> ${escapeHtml(e.text)}</p>
-                        <p class="text-[9px] text-neutral-400 mt-0.5">${timeAgo(e.ts)}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function escapeHtml(str) { const d = document.createElement('div');
-            d.textContent = str == null ? '' : String(str); return d.innerHTML; }
-
-        function timeAgo(ts) { if (!ts) return ''; const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000)); if (diffSec <
-                60) return 'Hace un momento'; const diffMin = Math.floor(diffSec / 60); if (diffMin < 60) return `Hace ${diffMin} min`;
-            const diffH = Math.floor(diffMin / 60); if (diffH < 24) return `Hace ${diffH} h`; return `Hace ${Math.floor(diffH/24)} d`; }
-
-        function openActivityModal() { document.getElementById('modal-activity').classList.remove('hidden');
-            renderActivityLog(lastActivityEntries); }
-
-        function closeActivityModal() { document.getElementById('modal-activity').classList.add('hidden'); }
-
-        // ----- SINCRO -----
-        function initRealtimeSync() {
-            db.ref('.info/connected').on('value', snap => {
-                document.getElementById('connection-dot').className = snap.val() ? "w-2.5 h-2.5 bg-emerald-500 rounded-full" :
-                    "w-2.5 h-2.5 bg-red-500 rounded-full animate-none";
-                document.getElementById('connection-text').innerText = snap.val() ? "Conectado en tiempo real" :
-                    "Sin conexión (Local)";
-                document.getElementById('sync-status').innerText = snap.val() ? "Sincronizado" : "Offline";
-            });
-
-            stateRef.on('value', snapshot => {
-                const cloudData = snapshot.val();
-                if (cloudData) {
-                    isApplyingRemoteUpdate = true;
-                    mergeCloudStates(cloudData);
-                    isApplyingRemoteUpdate = false;
-                } else if (!firstSnapshotReceived) {
-                    saveStateToCloud();
-                }
-                firstSnapshotReceived = true;
-                processAutoDepletions();
-                checkPendingHarvests();
-                renderAll();
-                document.getElementById('last-updated-time').innerText = `Última actualización: ${new Date().toLocaleTimeString()}`;
-            });
-
-            activityRef.limitToLast(30).on('value', (snapshot) => {
-                const entries = [];
-                snapshot.forEach(child => { entries.push(child.val()); });
-                entries.reverse();
-                renderActivityLog(entries);
-            });
-        }
-
-        function mergeCloudStates(parsed) {
-            if (parsed.stock) Object.keys(parsed.stock).forEach(k => { if (!state.stock[k]) state.stock[k] = { qty: 0,
-                        margin: 5 };
-                state.stock[k] = parsed.stock[k]; });
-            if (parsed.plans) state.plans = parsed.plans || {};
-            if (parsed.weeklyRules) state.weeklyRules = parsed.weeklyRules;
-            if (parsed.lastProcessedDate) state.lastProcessedDate = parsed.lastProcessedDate;
-            if (parsed.tempBatchInputs) state.tempBatchInputs = parsed.tempBatchInputs;
-            if (parsed.productSettings) state.productSettings = parsed.productSettings;
-            if (parsed.customProducts) state.customProducts = parsed.customProducts;
-            if (parsed.bakeSchedule) state.bakeSchedule = parsed.bakeSchedule;
-            Object.keys(DEFAULT_BREADS).forEach(k => {
-                if (!state.stock[k]) state.stock[k] = { qty: 0, margin: 5 };
-                if (!state.productSettings[k]) state.productSettings[k] = { enabled: true, margin: 5 };
-            });
-            for (let i = 0; i <= 6; i++) {
-                if (!state.weeklyRules[i]) state.weeklyRules[i] = {};
-                SERVICES_CONFIG.forEach(s => {
-                    if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false, bread: {} };
-                });
-            }
-        }
-
-        function saveStateToCloud() {
-            if (isApplyingRemoteUpdate) return Promise.resolve();
-            document.getElementById('sync-status').innerText = "Guardando...";
-            return stateRef.set(state).then(() => { document.getElementById('sync-status').innerText = "Sincronizado"; });
-        }
-
         // ----- HELPERS -----
         function getTodayDateString() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
@@ -693,58 +715,111 @@
             return state.weeklyRules[dow] || {};
         }
 
-        // ----- DESCUENTO AUTOMÁTICO -----
-        function processAutoDepletions() {
+        function getScheduledBakesForDate(dateStr) {
+            return state.bakeSchedule[dateStr] || {};
+        }
+
+        // ----- MERMAS -----
+        let depletionPending = false;
+        let depletionData = null;
+
+        function showDepletionPreview() {
             const todayStr = getTodayDateString();
             if (!state.lastProcessedDate) { state.lastProcessedDate = todayStr;
                 saveStateToCloud(); return; }
-            if (state.lastProcessedDate < todayStr) {
-                let logs = [];
-                let runnerStr = addDays(state.lastProcessedDate, 1);
-                while (runnerStr <= todayStr) {
-                    let deductedThisDay = [];
-                    const dailyServices = getEffectivePlan(runnerStr);
-                    SERVICES_CONFIG.forEach(svcConf => {
-                        const svc = dailyServices[svcConf.key];
-                        if (svc && svc.active && svc.bread) {
-                            Object.entries(svc.bread).forEach(([bKey, qty]) => {
-                                if (qty > 0 && state.stock[bKey]) {
-                                    state.stock[bKey].qty = Math.max(0, state.stock[bKey].qty - qty);
-                                    deductedThisDay.push(`${getShortName(bKey)} (-${qty})`);
-                                }
-                            });
+            if (state.lastProcessedDate >= todayStr) {
+                document.getElementById('depletion-preview').classList.add('hidden');
+                return;
+            }
+            const nextDate = addDays(state.lastProcessedDate, 1);
+            if (nextDate > todayStr) {
+                document.getElementById('depletion-preview').classList.add('hidden');
+                return;
+            }
+            const plan = getEffectivePlan(nextDate);
+            let previewLines = [];
+            let tempStock = {};
+            Object.keys(state.stock).forEach(k => { tempStock[k] = state.stock[k].qty; });
+
+            SERVICES_CONFIG.forEach(svcConf => {
+                const svc = plan[svcConf.key];
+                if (svc && svc.active && svc.bread) {
+                    Object.entries(svc.bread).forEach(([bKey, qty]) => {
+                        if (qty > 0 && state.stock[bKey]) {
+                            previewLines.push(`• ${getBreadConfig(bKey).name}: -${qty} uds (quedarán ${Math.max(0, tempStock[bKey] - qty)})`);
+                            tempStock[bKey] -= qty;
                         }
                     });
-                    if (deductedThisDay.length > 0) {
-                        logs.push(`• ${runnerStr.split('-').reverse().join('/')}: ${deductedThisDay.join(', ')}`);
-                    }
-                    runnerStr = addDays(runnerStr, 1);
                 }
-                state.lastProcessedDate = todayStr;
-                saveStateToCloud();
-                if (logs.length > 0) {
-                    document.getElementById('notification-text-content').innerText = logs.join('\n');
-                    document.getElementById('notification-panel').classList.remove('hidden');
-                }
+            });
+
+            if (previewLines.length === 0) {
+                document.getElementById('depletion-preview').classList.add('hidden');
+                return;
             }
+
+            const panel = document.getElementById('depletion-preview');
+            const text = document.getElementById('depletion-preview-text');
+            text.innerText = `Para el día ${formatDate(nextDate)} se descontarán:\n${previewLines.join('\n')}`;
+            panel.classList.remove('hidden');
+            depletionPending = true;
+            depletionData = { date: nextDate, plan: plan };
+        }
+
+        function applyDepletions() {
+            if (!depletionData) return;
+            const dateStr = depletionData.date;
+            const plan = depletionData.plan;
+            let logs = [];
+            SERVICES_CONFIG.forEach(svcConf => {
+                const svc = plan[svcConf.key];
+                if (svc && svc.active && svc.bread) {
+                    Object.entries(svc.bread).forEach(([bKey, qty]) => {
+                        if (qty > 0 && state.stock[bKey]) {
+                            state.stock[bKey].qty = Math.max(0, state.stock[bKey].qty - qty);
+                            logs.push(`${getShortName(bKey)} (-${qty})`);
+                        }
+                    });
+                }
+            });
+            state.lastProcessedDate = dateStr;
+            saveStateToCloud();
+            document.getElementById('depletion-preview').classList.add('hidden');
+            depletionPending = false;
+            depletionData = null;
+            if (logs.length) {
+                document.getElementById('notification-text-content').innerText = `• ${formatDate(dateStr)}: ${logs.join(', ')}`;
+                document.getElementById('notification-panel').classList.remove('hidden');
+            }
+            renderAll();
+        }
+
+        function skipDepletions() {
+            document.getElementById('depletion-preview').classList.add('hidden');
+            depletionPending = false;
+            depletionData = null;
+        }
+
+        function processAutoDepletions() {
+            // Se llama después de aplicar o saltar, solo para mantener el estado
         }
 
         function dismissNotification() { document.getElementById('notification-panel').classList.add('hidden'); }
 
-        // ----- PROYECCIONES: devuelve autonomía real (stock 0) y órdenes críticas (margen) -----
+        // ----- PROYECCIONES -----
         function calculateProjections() {
             let simStock = {};
             const activeKeys = getActiveBreadKeys();
             activeKeys.forEach(k => { simStock[k] = state.stock[k] ? state.stock[k].qty : 0; });
 
-            let autonomyDates = {}; // fecha en que llega a 0 (real)
-            let criticalOrders = []; // fecha en que cruza el margen
+            let autonomyDates = {};
+            let criticalOrders = [];
             let runnerStr = addDays(getTodayDateString(), 1);
 
             for (let i = 0; i < 45; i++) {
                 const plan = getEffectivePlan(runnerStr);
                 activeKeys.forEach(bKey => {
-                    if (autonomyDates[bKey]) return; // ya calculado
+                    if (autonomyDates[bKey]) return;
                     let dailyUsage = 0;
                     SERVICES_CONFIG.forEach(s => {
                         if (plan[s.key] && plan[s.key].active && plan[s.key].bread && plan[s.key].bread[bKey]) {
@@ -753,41 +828,45 @@
                     });
                     if (dailyUsage > 0) {
                         const margin = state.productSettings[bKey] ? state.productSettings[bKey].margin || 5 : 5;
-                        // Si aún no hemos registrado la fecha crítica (margen)
-                        // y el stock simulado está por debajo del margen, lo guardamos
                         if (simStock[bKey] <= margin) {
-                            // Solo si no se ha registrado aún una orden crítica para este producto
                             if (!criticalOrders.some(o => o.bread === bKey)) {
                                 criticalOrders.push({ bread: bKey, date: runnerStr, remaining: simStock[bKey] });
                             }
                         }
                         simStock[bKey] -= dailyUsage;
-                        // Fecha de fin real (stock 0)
                         if (simStock[bKey] <= 0) {
                             autonomyDates[bKey] = runnerStr;
-                        }
-                    } else {
-                        // Si no hay consumo, el stock no se agota
-                        if (!autonomyDates[bKey]) {
-                            // Para que no se quede sin fecha, asignamos un valor alto
-                            // pero solo si no hay consumo en absoluto
                         }
                     }
                 });
                 runnerStr = addDays(runnerStr, 1);
             }
-
-            // Para productos sin consumo, no tienen fecha de fin
-            activeKeys.forEach(k => {
-                if (!autonomyDates[k]) {
-                    // No se agota en 45 días
-                }
-            });
-
             return { autonomy: autonomyDates, orders: criticalOrders };
         }
 
-        // ----- AMASADAS PENDIENTES DE COSECHAR -----
+        function getWeekConsumption() {
+            const today = getTodayDateString();
+            const consumption = {};
+            const activeKeys = getActiveBreadKeys();
+            activeKeys.forEach(k => consumption[k] = 0);
+            for (let d = 1; d <= 7; d++) {
+                const dateStr = addDays(today, d);
+                const plan = getEffectivePlan(dateStr);
+                SERVICES_CONFIG.forEach(s => {
+                    const svc = plan[s.key];
+                    if (svc && svc.active && svc.bread) {
+                        Object.entries(svc.bread).forEach(([bk, qty]) => {
+                            if (qty > 0 && consumption[bk] !== undefined) {
+                                consumption[bk] += qty;
+                            }
+                        });
+                    }
+                });
+            }
+            return consumption;
+        }
+
+        // ----- AMASADORAS PENDIENTES -----
         function getPendingHarvests() {
             const today = getTodayDateString();
             const pending = [];
@@ -808,21 +887,28 @@
             const pending = getPendingHarvests();
             const panel = document.getElementById('harvest-panel');
             const list = document.getElementById('harvest-list');
-            if (pending.length === 0) {
+            const badge1 = document.getElementById('pending-badge');
+            const badge2 = document.getElementById('pending-badge-header');
+            if (pending.length > 0) {
+                badge1.classList.remove('hidden');
+                badge1.innerText = pending.length;
+                badge2.classList.remove('hidden');
+                badge2.innerText = pending.length;
+                panel.classList.remove('hidden');
+                list.innerHTML = pending.map(p => `
+                    <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-green-200">
+                        <span class="text-sm font-bold">${getBreadConfig(p.bread).name}</span>
+                        <span class="text-xs text-neutral-500">(${formatDate(p.date)})</span>
+                        <button onclick="harvestBake('${p.date}','${p.bread}')" class="btn-harvest">✅ Registrar</button>
+                    </div>
+                `).join('');
+            } else {
+                badge1.classList.add('hidden');
+                badge2.classList.add('hidden');
                 panel.classList.add('hidden');
-                return;
             }
-            panel.classList.remove('hidden');
-            list.innerHTML = pending.map(p => `
-                <div class="flex items-center gap-2 bg-white p-2 rounded-xl shadow-sm border border-green-200">
-                    <span class="text-sm font-bold">${getBreadConfig(p.bread).name}</span>
-                    <span class="text-xs text-neutral-500">(${formatDate(p.date)})</span>
-                    <button onclick="harvestBake('${p.date}','${p.bread}')" class="btn-harvest">✅ Registrar</button>
-                </div>
-            `).join('');
         }
 
-        // ----- COSECHAR AMASADA -----
         function harvestBake(dateStr, breadKey) {
             const scheduled = state.bakeSchedule[dateStr];
             if (!scheduled || !scheduled[breadKey]) return;
@@ -835,7 +921,7 @@
             }
             if (state.stock[breadKey]) {
                 state.stock[breadKey].qty += qty;
-                logActivity(`cosechó amasada de ${getBreadConfig(breadKey).name} (+${qty} uds) del ${formatDate(dateStr)}`);
+                logActivity(`registró amasadora de ${getBreadConfig(breadKey).name} (+${qty} uds) del ${formatDate(dateStr)}`);
             }
             delete scheduled[breadKey];
             if (Object.keys(scheduled).length === 0) {
@@ -846,7 +932,7 @@
             checkPendingHarvests();
         }
 
-        // ----- PROGRAMAR AMASADA -----
+        // ----- PROGRAMAR AMASADORA -----
         function openScheduleModal(breadKey) {
             document.getElementById('schedule-bread-key').value = breadKey;
             document.getElementById('schedule-product-name').innerText = getBreadConfig(breadKey).name;
@@ -863,14 +949,10 @@
             if (!date || !breadKey) return;
             if (!state.bakeSchedule[date]) state.bakeSchedule[date] = {};
             state.bakeSchedule[date][breadKey] = true;
-            logActivity(`programó amasada de ${getBreadConfig(breadKey).name} para el ${formatDate(date)} (inicio)`);
+            logActivity(`programó amasadora de ${getBreadConfig(breadKey).name} para el ${formatDate(date)} (inicio)`);
             closeScheduleModal();
             saveStateToCloud();
             renderAll();
-        }
-
-        function getScheduledBakesForDate(dateStr) {
-            return state.bakeSchedule[dateStr] || {};
         }
 
         // ----- RENDER STOCK -----
@@ -885,20 +967,19 @@
             document.getElementById('total-stock-count').innerText = totalQty;
 
             const proj = calculateProjections();
+            const weekCons = getWeekConsumption();
 
-            // Alerta suave solo si hay órdenes críticas (margen)
             const alertPanel = document.getElementById('gentle-bake-alert');
             const alertText = document.getElementById('gentle-alert-text');
             if (proj.orders.length > 0) {
                 const firstOrder = proj.orders[0];
                 const dateFmt = formatDate(firstOrder.date);
-                alertText.innerText = `⚠️ Necesitas iniciar la amasada de ${getBreadConfig(firstOrder.bread).name} antes del ${dateFmt} para no romper el stock de seguridad.`;
+                alertText.innerText = `⚠️ Necesitas iniciar la amasadora de ${getBreadConfig(firstOrder.bread).name} antes del ${dateFmt} para no romper el stock de seguridad.`;
                 alertPanel.classList.remove('hidden');
             } else {
                 alertPanel.classList.add('hidden');
             }
 
-            // Tarjetas
             grid.innerHTML = '';
             activeKeys.forEach(key => {
                 const item = state.stock[key] || { qty: 0, margin: 5 };
@@ -908,32 +989,34 @@
                 const isCritical = item.qty <= margin;
                 const batchVal = state.tempBatchInputs[key] || config.defaultBatch || 20;
 
-                // Autonomía real (stock 0) o "sin consumo"
                 let autonomyLabel = '';
                 if (proj.autonomy[key]) {
                     const [, m, d] = proj.autonomy[key].split('-');
                     autonomyLabel = `<span class="text-amber-600 font-bold">🟡 Hasta ${d}/${m}</span>`;
                 } else {
-                    // Si no hay consumo o es muy lejano
                     autonomyLabel = `<span class="text-emerald-600 font-bold">🟢 +45 días</span>`;
                 }
-                // Si está bajo mínimos, mostrar mensaje crítico
                 if (isCritical) {
                     autonomyLabel = `<span class="text-red-600 font-bold">⚠️ Bajo mínimos (${margin})</span>`;
                 }
+
+                const weekNeed = weekCons[key] || 0;
+                const weekOk = item.qty >= weekNeed;
+                const weekBadge = weekOk ?
+                    `<span class="badge-week-ok">✅ Semana cubierta</span>` :
+                    `<span class="badge-week-warn">⚠️ Insuficiente (necesitas ${weekNeed})</span>`;
 
                 grid.innerHTML += `
                     <div class="product-card ${isEnabled ? '' : 'disabled'} bg-white border ${isCritical ? 'border-red-300' : 'border-bakery-border'} rounded-3xl p-5 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start">
                                 <h3 class="text-xl font-serif font-bold text-bakery-primary">${config.name}</h3>
-                                <span class="text-[9px] ${isEnabled ? 'text-emerald-600' : 'text-neutral-400'} font-bold">${isEnabled ? '🟢 Activo' : '⛔ Inactivo'}</span>
+                                ${weekBadge}
                             </div>
                             <div class="text-[10px] mt-1 bg-neutral-50 p-1.5 rounded-lg border border-neutral-100 flex items-center justify-between">
                                 <span class="text-neutral-500 uppercase font-bold tracking-wide">Autonomía:</span> 
                                 ${autonomyLabel}
                             </div>
-                            
                             <div class="flex flex-col items-center mt-6 mb-4">
                                 <div class="flex items-baseline gap-2">
                                     <input type="number" value="${item.qty}" min="0" onchange="setDirectQty('${key}', this.value)" 
@@ -943,21 +1026,19 @@
                                 <span class="text-[9px] text-neutral-300 font-bold uppercase mt-1">Stock / Margen</span>
                             </div>
                         </div>
-
                         <div class="pt-4 border-t border-bakery-border flex gap-2 items-end">
                             <div class="w-16">
                                 <label class="block text-[8px] font-bold text-neutral-400 uppercase mb-1 text-center">Lote</label>
                                 <input type="number" id="batch-${key}" value="${batchVal}" onchange="updateTempBatch('${key}', this.value)" class="w-full py-1.5 border border-bakery-border rounded-lg text-xs font-bold text-center">
                             </div>
                             <button onclick="replenishBatch('${key}')" class="flex-1 bg-bakery-primary hover:bg-bakery-accent text-white py-2 rounded-xl text-xs font-bold transition">➕ Amasar</button>
-                            <button onclick="openScheduleModal('${key}')" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition" title="Programar amasada">📅</button>
+                            <button onclick="openScheduleModal('${key}')" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition" title="Programar amasadora">📅</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // ----- FUNCIONES STOCK -----
         function setDirectQty(k, v) {
             const newQty = Math.max(0, parseInt(v) || 0);
             if (newQty !== state.stock[k].qty) logActivity(`cambió ${getBreadConfig(k).name} a ${newQty} uds`);
@@ -979,7 +1060,53 @@
             renderTodaySummary();
         }
 
-        // ----- RENDER CALENDARIO (con fecha real de agotamiento) -----
+        // ----- VISTA SEMANA -----
+        function renderWeekPlan() {
+            const container = document.getElementById('week-plan-container');
+            container.innerHTML = '';
+            const today = getTodayDateString();
+            const activeKeys = getActiveBreadKeys();
+            const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+            for (let d = 1; d <= 7; d++) {
+                const dateStr = addDays(today, d);
+                const plan = getEffectivePlan(dateStr);
+                const dow = getDayOfWeek(dateStr);
+                const dayName = dayNames[dow === 0 ? 6 : dow - 1];
+
+                let consumo = {};
+                activeKeys.forEach(k => consumo[k] = 0);
+                SERVICES_CONFIG.forEach(s => {
+                    const svc = plan[s.key];
+                    if (svc && svc.active && svc.bread) {
+                        Object.entries(svc.bread).forEach(([bk, qty]) => {
+                            if (qty > 0 && consumo[bk] !== undefined) consumo[bk] += qty;
+                        });
+                    }
+                });
+
+                const bakes = getScheduledBakesForDate(dateStr);
+                const bakeText = Object.keys(bakes).length ? Object.keys(bakes).map(bk => getShortName(bk)).join(', ') :
+                    '—';
+
+                const proj = calculateProjections();
+                const runOut = Object.keys(proj.autonomy).filter(bk => proj.autonomy[bk] === dateStr);
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'week-day';
+                dayDiv.innerHTML = `
+                    <span class="day-name">${dayName} ${formatDate(dateStr)}</span>
+                    <div class="day-consumo">
+                        ${Object.entries(consumo).filter(([,q]) => q > 0).map(([bk,q]) => `<span class="prod-badge">${getShortName(bk)} ${q}</span>`).join('') || '<span class="text-neutral-400 text-xs">sin consumo</span>'}
+                        ${runOut.length ? `<span class="prod-badge bg-red-100 text-red-700">🔚 ${runOut.map(bk=>getShortName(bk)).join(', ')}</span>` : ''}
+                    </div>
+                    <div class="day-bake">${bakeText !== '—' ? `🧑‍🍳 ${bakeText}` : ''}</div>
+                `;
+                container.appendChild(dayDiv);
+            }
+        }
+
+        // ----- RENDER CALENDARIO -----
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre",
@@ -997,7 +1124,6 @@
             const todayStr = getTodayDateString();
 
             const proj = calculateProjections();
-            // Fechas de agotamiento real (stock 0)
             const runOutByDate = {};
             Object.keys(proj.autonomy).forEach(bk => {
                 const date = proj.autonomy[bk];
@@ -1005,7 +1131,6 @@
                 runOutByDate[date].push(bk);
             });
 
-            // Leyenda: mostrar solo productos con fecha de fin
             const legend = document.getElementById('autonomy-legend');
             const breadsWithAutonomy = Object.keys(proj.autonomy);
             if (breadsWithAutonomy.length) {
@@ -1020,7 +1145,6 @@
                 legend.innerHTML = `<span class="text-[10px] text-emerald-600 font-bold">🟢 Todo el stock cubre los próximos 45 días</span>`;
             }
 
-            // Construir grid
             for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="bg-neutral-50/40 rounded-2xl min-h-[100px]"></div>`;
 
             let listItems = [];
@@ -1032,6 +1156,7 @@
                 const plan = getEffectivePlan(dateStr);
                 const scheduledBakes = getScheduledBakesForDate(dateStr);
                 const hasScheduledBake = Object.keys(scheduledBakes).length > 0;
+                const isPending = hasScheduledBake && dateStr < todayStr;
 
                 let sHtml = [];
                 SERVICES_CONFIG.forEach(s => {
@@ -1058,18 +1183,20 @@
                 let bakeHtml = '';
                 if (hasScheduledBake) {
                     const items = Object.keys(scheduledBakes).map(bk => getShortName(bk)).join(', ');
+                    const pendingClass = isPending ? 'bg-orange-200 text-orange-800' : 'bg-blue-100 text-blue-800';
+                    const pendingText = isPending ? '⏳ Pendiente' : '🧑‍🍳';
                     bakeHtml =
-                        `<div class="mt-1 text-[8px] bg-blue-100 text-blue-800 rounded px-1 py-0.5 font-bold truncate" title="Amasada programada: ${items}">🧑‍🍳 ${items}</div>`;
+                        `<div class="mt-1 text-[8px] ${pendingClass} rounded px-1 py-0.5 font-bold truncate" title="Amasadora programada: ${items}">${pendingText} ${items}</div>`;
                 }
 
                 const highlight = dateStr === todayStr ? 'ring-2 ring-bakery-accent border-bakery-accent' : (runOutBreads ?
                     'border-red-200' : 'border-bakery-border');
                 const bgType = isException ? 'bg-amber-50/40 border-amber-200' : (sHtml.length > 0 ? 'bg-white' :
                     'bg-neutral-50/50');
-                const bakeClass = hasScheduledBake ? 'calendar-day.has-bake' : '';
+                const pendingClassBorder = isPending ? 'border-orange-400 bg-orange-50/30' : '';
 
                 grid.innerHTML += `
-                    <div onclick="openPlanModal('${dateStr}')" class="border ${highlight} ${bgType} ${bakeClass} rounded-2xl p-2 min-h-[115px] flex flex-col justify-between cursor-pointer hover:shadow-md transition">
+                    <div onclick="openQuickPanel('${dateStr}')" class="border ${highlight} ${bgType} ${pendingClassBorder} rounded-2xl p-2 min-h-[115px] flex flex-col justify-between cursor-pointer hover:shadow-md transition">
                         <div>
                             <div class="flex justify-between items-start">
                                 <span class="font-bold text-sm ${dateStr === todayStr ? 'text-bakery-accent' : 'text-neutral-700'}">${day}</span>
@@ -1082,10 +1209,12 @@
                     </div>
                 `;
 
-                // Preparar item para lista móvil
                 let details = [];
                 if (sHtml.length) details.push(...sHtml.map(h => h.replace(/<[^>]*>/g, '').trim()));
-                if (hasScheduledBake) details.push(`🧑‍🍳 ${Object.keys(scheduledBakes).map(bk => getShortName(bk)).join(', ')}`);
+                if (hasScheduledBake) {
+                    const txt = Object.keys(scheduledBakes).map(bk => getShortName(bk)).join(', ');
+                    details.push(isPending ? `⏳ ${txt}` : `🧑‍🍳 ${txt}`);
+                }
                 if (runOutBreads && runOutBreads.length) details.push(`🔚 ${runOutBreads.map(bk => getShortName(bk)).join(', ')}`);
 
                 listItems.push({
@@ -1093,17 +1222,17 @@
                     dateStr: dateStr,
                     isToday: dateStr === todayStr,
                     isException: isException,
+                    isPending: isPending,
                     details: details.length ? details : ['⚙️ Auto (sin actividad)']
                 });
             }
 
-            // Renderizar lista móvil
             const listContainer = document.getElementById('calendar-list');
             listContainer.innerHTML = listItems.map(item => `
-                <div class="calendar-list-item" onclick="openPlanModal('${item.dateStr}')">
+                <div class="calendar-list-item" onclick="openQuickPanel('${item.dateStr}')">
                     <span class="day-info ${item.isToday ? 'text-bakery-accent font-extrabold' : ''}">${item.day}</span>
                     <div class="day-details">
-                        ${item.details.map(d => `<span class="badge ${d.includes('🧑‍🍳') ? 'bake-badge' : ''}">${d}</span>`).join('')}
+                        ${item.details.map(d => `<span class="badge ${d.includes('⏳') ? 'pending-bake' : d.includes('🧑‍🍳') ? 'bake-badge' : ''}">${d}</span>`).join('')}
                     </div>
                     ${item.isException ? '<span class="text-[8px] text-bakery-accent font-bold">📌</span>' : ''}
                 </div>
@@ -1120,69 +1249,85 @@
             currentMonth = t.getMonth();
             renderCalendar(); }
 
-        // ----- RESUMEN DE HOY -----
-        function renderTodaySummary() {
-            const container = document.getElementById('today-summary');
-            if (!container) return;
-            const todayStr = getTodayDateString();
-            const plan = getEffectivePlan(todayStr);
-            const proj = calculateProjections();
-            const todayLabel = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+        // ----- PANEL RÁPIDO -----
+        let quickDate = '';
 
-            let badges = [];
+        function openQuickPanel(dateStr) {
+            quickDate = dateStr;
+            const plan = getEffectivePlan(dateStr);
+            const isException = state.plans[dateStr] && state.plans[dateStr].isException;
+            const [y, m, d] = dateStr.split('-');
+            document.getElementById('quick-panel-title').innerText = `Editar ${d}/${m}/${y}`;
+            document.getElementById('quick-panel-sub').innerHTML = isException ?
+                `<span class="exception-badge">📌 Excepción manual</span> Modifica los consumos.` :
+                'Modifica los consumos (se creará una excepción manual).';
+
+            const container = document.getElementById('quick-panel-services');
+            container.innerHTML = '';
+            const activeKeys = getActiveBreadKeys();
+
+            SERVICES_CONFIG.forEach(svcConf => {
+                const svc = plan[svcConf.key] || { active: false, bread: {} };
+                const div = document.createElement('div');
+                div.className = 'service-group';
+                let bHtml = '';
+                activeKeys.forEach(bk => {
+                    const val = svc.bread ? (svc.bread[bk] || 0) : 0;
+                    bHtml += `
+                        <label>
+                            <span>${getShortName(bk)}</span>
+                            <input type="number" id="quick-${svcConf.key}-${bk}" value="${val}" min="0" data-svc="${svcConf.key}" data-bread="${bk}">
+                        </label>`;
+                });
+                div.innerHTML = `
+                    <div class="svc-header">
+                        <span class="font-bold text-sm">${svcConf.icon} ${svcConf.name}</span>
+                        <label class="flex items-center gap-1 text-[10px]">
+                            <input type="checkbox" id="quick-check-${svcConf.key}" ${svc.active?'checked':''}>
+                            Activo
+                        </label>
+                    </div>
+                    <div class="svc-breads">${bHtml}</div>
+                `;
+                container.appendChild(div);
+            });
+            document.getElementById('quick-panel').classList.add('open');
+        }
+
+        function closeQuickPanel() { document.getElementById('quick-panel').classList.remove('open'); }
+
+        function saveQuickPlan() {
+            const dateStr = quickDate;
+            if (!state.plans[dateStr]) state.plans[dateStr] = {};
+            state.plans[dateStr].isException = true;
+            state.plans[dateStr].services = {};
+
+            let summary = [];
+            const activeKeys = getActiveBreadKeys();
             SERVICES_CONFIG.forEach(s => {
-                const svc = plan[s.key];
-                if (svc && svc.active) {
-                    let details = [];
-                    if (svc.bread) Object.entries(svc.bread).forEach(([bk, qty]) => { if (qty > 0 && state.productSettings[bk] &&
-                            state.productSettings[bk].enabled !== false) details.push(`${qty} ${getShortName(bk)}`); });
-                    if (details.length) badges.push(
-                        `<span class="inline-flex items-center gap-1 bg-bakery-accentLight/60 text-bakery-primary text-[11px] font-semibold px-2.5 py-1.5 rounded-full border border-bakery-accent/10">${s.icon} ${s.name}: ${details.join(', ')}</span>`
-                        );
+                const isActive = document.getElementById(`quick-check-${s.key}`).checked;
+                state.plans[dateStr].services[s.key] = { active: isActive, bread: {} };
+                activeKeys.forEach(bk => {
+                    const val = parseInt(document.getElementById(`quick-${s.key}-${bk}`).value) || 0;
+                    state.plans[dateStr].services[s.key].bread[bk] = isActive ? val : 0;
+                });
+                if (isActive) {
+                    const details = Object.entries(state.plans[dateStr].services[s.key].bread).filter(([, q]) => q >
+                        0).map(([bk, q]) => `${q} ${getShortName(bk)}`).join(', ');
+                    summary.push(details ? `${s.name} (${details})` : s.name);
                 }
             });
 
-            // Toca amasar hoy? (basado en margen crítico)
-            const criticalToday = proj.orders.filter(o => o.date === todayStr).map(o => getShortName(o.bread));
-            if (criticalToday.length) {
-                badges.push(
-                    `<span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-200">🥣 Toca amasar hoy: ${criticalToday.join(', ')}</span>`
-                    );
-            }
+            const [, m, d] = dateStr.split('-');
+            logActivity(summary.length ? `planificó excepción el ${d}/${m}: ${summary.join(' + ')}` :
+                `vació la planificación del ${d}/${m}`);
 
-            // Bajo mínimos (solo activos)
-            const criticalNow = Object.entries(state.stock).filter(([k, i]) => {
-                const settings = state.productSettings[k];
-                if (!settings || settings.enabled === false) return false;
-                const margin = settings.margin || 5;
-                return i.qty <= margin;
-            }).map(([k]) => getShortName(k));
-            if (criticalNow.length) {
-                badges.push(
-                    `<span class="inline-flex items-center gap-1 bg-red-50 text-bakery-danger text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-100">⚠️ Bajo mínimos: ${criticalNow.join(', ')}</span>`
-                    );
-            }
-
-            const todayBakes = getScheduledBakesForDate(todayStr);
-            if (Object.keys(todayBakes).length) {
-                const txt = Object.keys(todayBakes).map(bk => getShortName(bk)).join(', ');
-                badges.push(
-                    `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-blue-200">🧑‍🍳 Amasada programada: ${txt}</span>`
-                    );
-            }
-
-            container.innerHTML = `
-                <p class="text-[10px] uppercase tracking-wider font-bold text-neutral-400 mb-2">📅 Hoy · ${todayLabel}</p>
-                <div class="flex flex-wrap gap-2">
-                    ${badges.length ? badges.join('') : '<span class="text-xs text-neutral-400">Nada planificado ni pendiente para hoy. 🎉</span>'}
-                </div>
-            `;
+            closeQuickPanel();
+            saveStateToCloud();
+            renderAll();
         }
 
-        // ----- MODALES (REGLAS, PRODUCTOS, PLAN DIARIO) sin cambios relevantes -----
-        // (Se mantienen igual que en la versión anterior para no alargar)
-        // Se incluyen las funciones completas para que funcione.
-
+        // ----- MODALES: REGLAS SEMANALES -----
         function openWeeklyRulesModal() {
             renderWeeklyRules();
             document.getElementById('modal-weekly-rules').classList.remove('hidden');
@@ -1242,6 +1387,7 @@
         }
 
         function saveWeeklyRules() {
+            const activeKeys = getActiveBreadKeys();
             for (let dow = 0; dow <= 6; dow++) {
                 if (!state.weeklyRules[dow]) state.weeklyRules[dow] = {};
                 SERVICES_CONFIG.forEach(svcConf => {
@@ -1257,8 +1403,8 @@
                         `.weekly-bread-input[data-dow="${dow}"][data-svc="${svcConf.key}"]`);
                     inputs.forEach(inp => {
                         const bk = inp.dataset.bread;
-                        state.weeklyRules[dow][svcConf.key].bread[bk] = isActive ? (parseInt(inp.value) || 0) :
-                            0;
+                        state.weeklyRules[dow][svcConf.key].bread[bk] = (isActive && activeKeys.includes(bk)) ?
+                            (parseInt(inp.value) || 0) : 0;
                     });
                 });
             }
@@ -1268,6 +1414,7 @@
             renderAll();
         }
 
+        // ----- MODALES: PRODUCTOS -----
         function openProductsModal() {
             renderProductsList();
             document.getElementById('modal-products').classList.remove('hidden');
@@ -1357,120 +1504,206 @@
             renderAll();
         }
 
-        // ----- MODAL PLAN DIARIO -----
-        let currentDateModal = '';
-
-        function openPlanModal(dateStr) {
-            currentDateModal = dateStr;
-            const isException = state.plans[dateStr] && state.plans[dateStr].isException;
-            const [y, m, d] = dateStr.split('-');
-            document.getElementById('modal-date-title').innerText = `${d}/${m}/${y}`;
-            document.getElementById('exception-banner').style.display = isException ? 'flex' : 'none';
-            document.getElementById('modal-date-subtitle').innerText = isException ? "Viendo Excepción Manual" :
-                "Viendo Regla Automática (al guardar crearás excepción)";
-
-            generateServicesHtml('modal-services-container', getEffectivePlan(dateStr), 'plan');
-            document.getElementById('modal-plan').classList.remove('hidden');
+        // ----- ACTIVIDAD / LOG -----
+        function logActivity(text) {
+            activityRef.push({
+                user: currentUserName || 'Alguien',
+                text: text,
+                ts: firebase.database.ServerValue.TIMESTAMP
+            }).catch(() => {});
         }
 
-        function closeModal() { document.getElementById('modal-plan').classList.add('hidden'); }
+        function renderActivityLog(entries) {
+            lastActivityEntries = entries;
+            const list = document.getElementById('activity-log-list');
+            if (!list) return;
+            if (!entries.length) { list.innerHTML = '<p class="text-xs text-neutral-400 text-center py-6">Sin actividad.</p>'; return; }
+            list.innerHTML = entries.map(e => `
+                <div class="flex items-start gap-2 text-xs bg-neutral-50 rounded-xl px-3 py-2 border border-neutral-100">
+                    <span class="text-base leading-none">👤</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-neutral-700 break-words"><span class="font-bold text-bakery-primary">${escapeHtml(e.user)}</span> ${escapeHtml(e.text)}</p>
+                        <p class="text-[9px] text-neutral-400 mt-0.5">${timeAgo(e.ts)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-        function generateServicesHtml(containerId, servicesData, prefix) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            const activeKeys = getActiveBreadKeys();
+        function escapeHtml(str) { const d = document.createElement('div');
+            d.textContent = str == null ? '' : String(str); return d.innerHTML; }
 
-            SERVICES_CONFIG.forEach(svcConf => {
-                const svc = servicesData[svcConf.key] || { active: false, bread: {} };
-                let bHtml = '';
-                activeKeys.forEach(bKey => {
-                    const val = svc.bread ? (svc.bread[bKey] || 0) : 0;
-                    bHtml += `
-                        <div class="flex items-center justify-between gap-1 bg-white p-2 rounded-xl border border-neutral-100">
-                            <span class="text-[10px] font-bold truncate">${getBreadConfig(bKey).name}</span>
-                            <input type="number" id="${prefix}-${svcConf.key}-${bKey}" value="${val}" min="0" onfocus="this.select()" class="w-12 h-7 text-center text-xs font-bold border border-bakery-border rounded-lg bg-neutral-50 focus:bg-white focus:border-bakery-accent">
-                        </div>`;
-                });
+        function timeAgo(ts) { if (!ts) return ''; const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000)); if (diffSec <
+                60) return 'Hace un momento'; const diffMin = Math.floor(diffSec / 60); if (diffMin < 60) return `Hace ${diffMin} min`;
+            const diffH = Math.floor(diffMin / 60); if (diffH < 24) return `Hace ${diffH} h`; return `Hace ${Math.floor(diffH/24)} d`; }
 
-                container.innerHTML += `
-                    <div class="border-2 ${svcConf.color} rounded-2xl overflow-hidden mb-3">
-                        <div class="p-3 bg-white flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">${svcConf.icon}</span>
-                                <h4 class="font-bold text-sm text-neutral-800">${svcConf.name}</h4>
-                            </div>
-                            <label class="flex items-center gap-1.5 cursor-pointer">
-                                <span class="text-[10px] font-bold text-neutral-400 uppercase" id="${prefix}-label-${svcConf.key}">${svc.active?'Activo':'Inactivo'}</span>
-                                <input type="checkbox" id="${prefix}-check-${svcConf.key}" ${svc.active?'checked':''} onchange="togglePanelUI('${prefix}', '${svcConf.key}')" class="w-5 h-5 accent-bakery-accent rounded">
-                            </label>
-                        </div>
-                        <div id="${prefix}-panel-${svcConf.key}" class="${svc.active?'block':'hidden'} p-3 border-t border-neutral-100 bg-neutral-50">
-                            <div class="grid grid-cols-2 gap-2">${bHtml}</div>
-                        </div>
-                    </div>`;
+        function openActivityModal() { document.getElementById('modal-activity').classList.remove('hidden');
+            renderActivityLog(lastActivityEntries); }
+
+        function closeActivityModal() { document.getElementById('modal-activity').classList.add('hidden'); }
+
+        // ----- IDENTIDAD -----
+        function updateUserNameButton() {
+            const label = document.getElementById('btn-user-name-label');
+            if (label) label.innerText = currentUserName || 'Identificarme';
+        }
+
+        function ensureUserName() { updateUserNameButton(); if (!currentUserName) openNameModal(); }
+
+        function openNameModal() { document.getElementById('input-user-name').value = currentUserName;
+            document.getElementById('modal-name').classList.remove('hidden'); }
+
+        function closeNameModal() { document.getElementById('modal-name').classList.add('hidden'); }
+
+        function saveUserName() { const val = document.getElementById('input-user-name').value.trim(); if (val) { currentUserName = val
+                    .slice(0, 24);
+                localStorage.setItem('panaderia_user_name', currentUserName);
+                updateUserNameButton(); }
+            closeNameModal(); }
+
+        // ----- SINCRO CON FIREBASE -----
+        function initRealtimeSync() {
+            db.ref('.info/connected').on('value', snap => {
+                document.getElementById('connection-dot').className = snap.val() ? "w-2.5 h-2.5 bg-emerald-500 rounded-full" :
+                    "w-2.5 h-2.5 bg-red-500 rounded-full animate-none";
+                document.getElementById('connection-text').innerText = snap.val() ? "Conectado en tiempo real" :
+                    "Sin conexión (Local)";
+                document.getElementById('sync-status').innerText = snap.val() ? "Sincronizado" : "Offline";
+            });
+
+            stateRef.on('value', snapshot => {
+                const cloudData = snapshot.val();
+                if (cloudData) {
+                    isApplyingRemoteUpdate = true;
+                    mergeCloudStates(cloudData);
+                    isApplyingRemoteUpdate = false;
+                } else if (!firstSnapshotReceived) {
+                    saveStateToCloud();
+                }
+                firstSnapshotReceived = true;
+                showDepletionPreview();
+                // Si no hay previsión pendiente, aplicar automáticamente las que ya estaban
+                if (!depletionPending) {
+                    // Ya se aplicaron en showDepletionPreview o se saltaron
+                }
+                checkPendingHarvests();
+                renderAll();
+                document.getElementById('last-updated-time').innerText = `Última actualización: ${new Date().toLocaleTimeString()}`;
+            });
+
+            activityRef.limitToLast(30).on('value', (snapshot) => {
+                const entries = [];
+                snapshot.forEach(child => { entries.push(child.val()); });
+                entries.reverse();
+                renderActivityLog(entries);
             });
         }
 
-        function togglePanelUI(prefix, key) {
-            const chk = document.getElementById(`${prefix}-check-${key}`).checked;
-            document.getElementById(`${prefix}-label-${key}`).innerText = chk ? 'Activo' : 'Inactivo';
-            document.getElementById(`${prefix}-panel-${key}`).className = chk ? 'block p-3 border-t border-neutral-100 bg-neutral-50' :
-                'hidden';
+        function mergeCloudStates(parsed) {
+            if (parsed.stock) Object.keys(parsed.stock).forEach(k => { if (!state.stock[k]) state.stock[k] = { qty: 0,
+                        margin: 5 };
+                state.stock[k] = parsed.stock[k]; });
+            if (parsed.plans) state.plans = parsed.plans || {};
+            if (parsed.weeklyRules) state.weeklyRules = parsed.weeklyRules;
+            if (parsed.lastProcessedDate) state.lastProcessedDate = parsed.lastProcessedDate;
+            if (parsed.tempBatchInputs) state.tempBatchInputs = parsed.tempBatchInputs;
+            if (parsed.productSettings) state.productSettings = parsed.productSettings;
+            if (parsed.customProducts) state.customProducts = parsed.customProducts;
+            if (parsed.bakeSchedule) state.bakeSchedule = parsed.bakeSchedule;
+            Object.keys(DEFAULT_BREADS).forEach(k => {
+                if (!state.stock[k]) state.stock[k] = { qty: 0, margin: 5 };
+                if (!state.productSettings[k]) state.productSettings[k] = { enabled: true, margin: 5 };
+            });
+            for (let i = 0; i <= 6; i++) {
+                if (!state.weeklyRules[i]) state.weeklyRules[i] = {};
+                SERVICES_CONFIG.forEach(s => {
+                    if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false, bread: {} };
+                });
+            }
         }
 
-        function savePlan() {
-            const dateStr = currentDateModal;
-            if (!state.plans[dateStr]) state.plans[dateStr] = {};
-            state.plans[dateStr].isException = true;
-            state.plans[dateStr].services = {};
+        function saveStateToCloud() {
+            if (isApplyingRemoteUpdate) return Promise.resolve();
+            document.getElementById('sync-status').innerText = "Guardando...";
+            return stateRef.set(state).then(() => { document.getElementById('sync-status').innerText = "Sincronizado"; });
+        }
 
-            let summary = [];
-            const activeKeys = getActiveBreadKeys();
+        // ----- RESUMEN DE HOY -----
+        function renderTodaySummary() {
+            const container = document.getElementById('today-summary');
+            if (!container) return;
+            const todayStr = getTodayDateString();
+            const plan = getEffectivePlan(todayStr);
+            const proj = calculateProjections();
+            const todayLabel = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+            let badges = [];
             SERVICES_CONFIG.forEach(s => {
-                const isActive = document.getElementById(`plan-check-${s.key}`).checked;
-                state.plans[dateStr].services[s.key] = { active: isActive, bread: {} };
-                activeKeys.forEach(bk => {
-                    state.plans[dateStr].services[s.key].bread[bk] = isActive ? (parseInt(document
-                        .getElementById(`plan-${s.key}-${bk}`).value) || 0) : 0;
-                });
-                if (isActive) {
-                    const details = Object.entries(state.plans[dateStr].services[s.key].bread).filter(([, q]) => q >
-                        0).map(([bk, q]) => `${q} ${getShortName(bk)}`).join(', ');
-                    summary.push(details ? `${s.name} (${details})` : s.name);
+                const svc = plan[s.key];
+                if (svc && svc.active) {
+                    let details = [];
+                    if (svc.bread) Object.entries(svc.bread).forEach(([bk, qty]) => { if (qty > 0 && state.productSettings[
+                            bk] && state.productSettings[bk].enabled !== false) details.push(`${qty} ${getShortName(
+                            bk)}`); });
+                    if (details.length) badges.push(
+                        `<span class="inline-flex items-center gap-1 bg-bakery-accentLight/60 text-bakery-primary text-[11px] font-semibold px-2.5 py-1.5 rounded-full border border-bakery-accent/10">${s.icon} ${s.name}: ${details.join(', ')}</span>`
+                        );
                 }
             });
 
-            const [, m, d] = dateStr.split('-');
-            logActivity(summary.length ? `planificó una excepción el ${d}/${m}: ${summary.join(' + ')}` :
-                `vació la planificación del ${d}/${m}`);
+            const criticalToday = proj.orders.filter(o => o.date === todayStr).map(o => getShortName(o.bread));
+            if (criticalToday.length) {
+                badges.push(
+                    `<span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-200">🥣 Toca amasar hoy: ${criticalToday.join(', ')}</span>`
+                    );
+            }
 
-            closeModal();
-            saveStateToCloud();
-            renderAll();
-        }
+            const criticalNow = Object.entries(state.stock).filter(([k, i]) => {
+                const settings = state.productSettings[k];
+                if (!settings || settings.enabled === false) return false;
+                const margin = settings.margin || 5;
+                return i.qty <= margin;
+            }).map(([k]) => getShortName(k));
+            if (criticalNow.length) {
+                badges.push(
+                    `<span class="inline-flex items-center gap-1 bg-red-50 text-bakery-danger text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-100">⚠️ Bajo mínimos: ${criticalNow.join(', ')}</span>`
+                    );
+            }
 
-        function revertToRule() {
-            const dateStr = currentDateModal;
-            const [, m, d] = dateStr.split('-');
-            delete state.plans[dateStr];
-            logActivity(`quitó la excepción manual del ${d}/${m} (vuelve a la regla automática)`);
-            closeModal();
-            saveStateToCloud();
-            renderAll();
+            const todayBakes = getScheduledBakesForDate(todayStr);
+            if (Object.keys(todayBakes).length) {
+                const txt = Object.keys(todayBakes).map(bk => getShortName(bk)).join(', ');
+                badges.push(
+                    `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-blue-200">🧑‍🍳 Amasadora programada: ${txt}</span>`
+                    );
+            }
+
+            container.innerHTML = `
+                <p class="text-[10px] uppercase tracking-wider font-bold text-neutral-400 mb-2">📅 Hoy · ${todayLabel}</p>
+                <div class="flex flex-wrap gap-2">
+                    ${badges.length ? badges.join('') : '<span class="text-xs text-neutral-400">Nada planificado ni pendiente para hoy. 🎉</span>'}
+                </div>
+            `;
         }
 
         // ----- NAVEGACIÓN -----
         function switchView(view) {
-            const isS = view === 'stock';
-            document.getElementById('view-stock').classList.toggle('hidden', !isS);
-            document.getElementById('view-calendar').classList.toggle('hidden', isS);
-            document.getElementById('btn-stock').className = isS ?
+            const isStock = view === 'stock';
+            const isWeek = view === 'week';
+            const isCal = view === 'calendar';
+            document.getElementById('view-stock').classList.toggle('hidden', !isStock);
+            document.getElementById('view-week').classList.toggle('hidden', !isWeek);
+            document.getElementById('view-calendar').classList.toggle('hidden', !isCal);
+            document.getElementById('btn-stock').className = isStock ?
                 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
                 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
-            document.getElementById('btn-calendar').className = !isS ?
+            document.getElementById('btn-week').className = isWeek ?
                 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
                 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
-            renderAll();
+            document.getElementById('btn-calendar').className = isCal ?
+                "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
+                "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+            if (isWeek) renderWeekPlan();
+            else renderAll();
         }
 
         // ----- RENDER ALL -----
@@ -1481,8 +1714,10 @@
 
         // ----- INICIO -----
         window.onload = function() {
+            console.log("🚀 Iniciando aplicación v2.3.1");
             initRealtimeSync();
             ensureUserName();
+            console.log("✅ Aplicación cargada correctamente");
         };
     </script>
 </body>
