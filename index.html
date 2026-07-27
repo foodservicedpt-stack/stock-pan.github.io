@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Stock & Amasado v2.3.3 — Obrador Colaborativo</title>
-<meta name="description" content="Panel colaborativo v2.3.3: gestiona productos, reglas semanales, programa amasadoras y controla márgenes." />
+<title>Stock & Amasado v2.3.4 — Obrador Colaborativo</title>
+<meta name="description" content="Panel colaborativo v2.3.4: gestión de stock, planificación semanal y amasadoras." />
 <script src="https://cdn.tailwindcss.com">
 </script>
 <script>
@@ -36,7 +36,10 @@ keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(6px)' }, '10
 --input-bg: white;
 --badge-bg: #f3f4f6;
 --badge-text: #1f2937;
+--dropdown-bg: white;
+--dropdown-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
+
 @media (prefers-color-scheme: dark) {
 :root {
 --bg-body: #1a1410;
@@ -50,8 +53,11 @@ keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(6px)' }, '10
 --input-bg: #3a2f27;
 --badge-bg: #3d322a;
 --badge-text: #d4c8b8;
+--dropdown-bg: #2a221c;
+--dropdown-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 }
+
 body {
 font-family: 'Plus Jakarta Sans', sans-serif;
 background-color: var(--bg-body);
@@ -61,9 +67,11 @@ radial-gradient(circle at 100% 15%, rgba(168, 50, 50, 0.05), transparent 40%);
 background-attachment: fixed;
 transition: background-color 0.3s, color 0.3s;
 }
+
 h1, h2, h3, .font-serif {
 font-family: 'Playfair Display', serif;
 }
+
 ::-webkit-scrollbar {
 width: 6px;
 height: 6px;
@@ -78,11 +86,13 @@ border-radius: 10px;
 ::-webkit-scrollbar-thumb:hover {
 background: #C4B5A5;
 }
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
 -webkit-appearance: none;
 margin: 0;
 }
+
 .grad-accent {
 background-image: linear-gradient(135deg, #8B5A2B 0%, #4A2C11 100%);
 }
@@ -92,12 +102,14 @@ background-image: linear-gradient(135deg, #4A2C11 0%, #8B5A2B 65%, #A8622E 100%)
 background-clip: text;
 color: transparent;
 }
+
 .glass {
 background: var(--bg-glass);
 backdrop-filter: blur(14px);
 -webkit-backdrop-filter: blur(14px);
 border-color: var(--border-color);
 }
+
 .product-card {
 transition: all 0.2s ease;
 background: var(--bg-card);
@@ -111,6 +123,7 @@ filter: grayscale(0.8);
 opacity: 0.5;
 pointer-events: none;
 }
+
 .weekly-rules-grid {
 display: grid;
 grid-template-columns: repeat(3, 1fr);
@@ -174,6 +187,7 @@ opacity: 0.6;
 margin-left: 0.3rem;
 accent-color: #8B5A2B;
 }
+
 .btn-harvest {
 background: #22c55e;
 color: white;
@@ -187,6 +201,7 @@ font-weight: 700;
 .btn-harvest:hover {
 background: #16a34a;
 }
+
 .calendar-list-view {
 display: none;
 }
@@ -238,6 +253,7 @@ grid-template-columns: 1fr;
 gap: 1rem;
 }
 }
+
 .slide-panel {
 position: fixed;
 top: 0;
@@ -323,6 +339,7 @@ border-radius: 12px;
 font-size: 0.7rem;
 font-weight: 700;
 }
+
 .badge-week-ok {
 background: #dcfce7;
 color: #166534;
@@ -348,6 +365,7 @@ font-size: 0.65rem;
 font-weight: 700;
 margin-left: 0.3rem;
 }
+
 .week-grid {
 display: grid;
 grid-template-columns: repeat(7, 1fr);
@@ -413,6 +431,7 @@ margin-left: 0.3rem;
 display: inline-block;
 margin-top: 0.3rem;
 }
+
 @media (max-width: 768px) {
 .week-grid {
 grid-template-columns: repeat(2, 1fr);
@@ -425,7 +444,57 @@ grid-template-columns: 1fr;
 gap: 0.5rem;
 }
 }
-/* Ajustes modo oscuro para componentes específicos */
+
+/* === MENÚ DESPLEGABLE DE CONFIGURACIÓN === */
+.dropdown-config {
+position: relative;
+display: inline-block;
+}
+.dropdown-config .dropdown-content {
+display: none;
+position: absolute;
+right: 0;
+top: calc(100% + 0.5rem);
+background: var(--dropdown-bg);
+min-width: 200px;
+border-radius: 16px;
+box-shadow: var(--dropdown-shadow);
+border: 1px solid var(--border-color);
+padding: 0.5rem 0;
+z-index: 100;
+}
+.dropdown-config .dropdown-content.show {
+display: block;
+}
+.dropdown-config .dropdown-content button {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+padding: 0.6rem 1.2rem;
+font-size: 0.8rem;
+font-weight: 600;
+color: var(--text-primary);
+background: transparent;
+border: none;
+width: 100%;
+text-align: left;
+cursor: pointer;
+transition: background 0.15s;
+}
+.dropdown-config .dropdown-content button:hover {
+background: var(--bg-neutral);
+}
+
+@media (prefers-color-scheme: dark) {
+.dropdown-config .dropdown-content button {
+color: var(--text-primary);
+}
+.dropdown-config .dropdown-content button:hover {
+background: var(--bg-neutral);
+}
+}
+
+/* Ajustes modo oscuro para componentes adicionales */
 @media (prefers-color-scheme: dark) {
 .grad-text {
 background-image: linear-gradient(135deg, #e8dccc 0%, #c4a88a 65%, #b8926a 100%);
@@ -667,33 +736,52 @@ background: #6b4220;
 </script>
 </head>
 <body>
-<!-- HEADER (sin banner de conexión) -->
+
+<!-- HEADER -->
 <header class="max-w-6xl mx-auto px-6 pt-10 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 <div>
 <div class="flex items-center gap-3">
-<span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador Colaborativo v2.3.3</span>
+<span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador Colaborativo v2.3.4</span>
 <span id="sync-status" class="text-[10px] text-amber-700 font-mono bg-amber-50/50 px-2 py-0.5 rounded-full">Sincronizado</span>
 <span id="pending-badge" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
 </div>
 <h1 class="text-5xl md:text-6xl font-bold grad-text mt-3 leading-[1.05] tracking-tight">Stock &amp; Amasado</h1>
 <p class="text-xs text-neutral-500 mt-2">Sincronizado en tiempo real · Planifica y registra tus amasadoras fácilmente.</p>
 </div>
-<div class="flex flex-wrap gap-1.5 bg-neutral-200/50 p-1.5 rounded-2xl shadow-inner">
+<div class="flex flex-wrap items-center gap-1.5 bg-neutral-200/50 p-1.5 rounded-2xl shadow-inner">
 <button onclick="switchView('stock')" id="btn-stock" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100">📦 Stock</button>
 <button onclick="switchView('week')" id="btn-week" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Semana</button>
 <button onclick="switchView('calendar')" id="btn-calendar" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Calendario</button>
-<button onclick="openWeeklyRulesModal()" class="px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition grad-accent text-white shadow-sm hover:opacity-90 flex items-center gap-1">⚙️ Reglas Semanales</button>
-<button onclick="openProductsModal()" class="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary border border-neutral-200 hover:bg-neutral-50 shadow-sm">📦 Gestionar Productos</button>
+
+<!-- Menú desplegable Configuración -->
+<div class="dropdown-config">
+<button onclick="toggleConfigDropdown()" class="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary border border-neutral-200 hover:bg-neutral-50 shadow-sm flex items-center gap-1.5">
+⚙️ <span class="hidden sm:inline">Configurar</span>
+</button>
+<div id="configDropdown" class="dropdown-content">
+<button onclick="openWeeklyRulesModal(); toggleConfigDropdown();">
+⚙️ Reglas Semanales
+</button>
+<button onclick="openProductsModal(); toggleConfigDropdown();">
+📦 Gestionar Productos
+</button>
+<button onclick="toggleDarkMode(document.getElementById('btn-dark-mode-config')); toggleConfigDropdown();" id="btn-dark-mode-config">
+🌙 Modo Oscuro
+</button>
+</div>
+</div>
 </div>
 </header>
+
 <!-- BARRA RÁPIDA -->
 <div class="max-w-6xl mx-auto px-6 flex flex-wrap gap-2 -mt-1 mb-2">
 <button onclick="openActivityModal()" class="flex items-center gap-1 text-xs font-bold text-bakery-primary bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">🕓 Actividad</button>
 <button onclick="openNameModal()" id="btn-user-name" class="flex items-center gap-1 text-xs font-bold text-neutral-500 bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm">👤 <span id="btn-user-name-label">Identificarme</span></button>
 <span id="pending-badge-header" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
-<button onclick="toggleDarkMode(this)" class="flex items-center gap-1 text-xs font-bold text-neutral-500 bg-white px-3 py-1.5 rounded-lg transition hover:bg-neutral-50 border border-bakery-border shadow-sm" id="btn-dark-mode">🌙 Modo</button>
 </div>
+
 <hr class="border-bakery-border max-w-6xl mx-auto my-2 px-6">
+
 <!-- PREVISIÓN DE MERMAS -->
 <div id="depletion-preview" class="max-w-6xl mx-auto px-6 mt-4 hidden">
 <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
@@ -705,6 +793,7 @@ background: #6b4220;
 </div>
 </div>
 </div>
+
 <!-- NOTIFICACIONES (mermas ya aplicadas) -->
 <div id="notification-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
 <div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
@@ -716,6 +805,7 @@ background: #6b4220;
 <button onclick="dismissNotification()" class="text-orange-900 font-bold text-sm p-1">✕</button>
 </div>
 </div>
+
 <!-- AMASADORAS PENDIENTES -->
 <div id="harvest-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
 <div class="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-sm">
@@ -723,6 +813,7 @@ background: #6b4220;
 <div id="harvest-list" class="mt-2 flex flex-wrap gap-3"></div>
 </div>
 </div>
+
 <!-- AVISO SUAVE -->
 <div id="gentle-bake-alert" class="max-w-6xl mx-auto px-6 mt-2 hidden">
 <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3 text-xs text-amber-800 flex items-center gap-2">
@@ -730,8 +821,10 @@ background: #6b4220;
 <span id="gentle-alert-text">Necesitas iniciar una amasadora pronto para no romper el stock de seguridad.</span>
 </div>
 </div>
+
 <!-- MAIN -->
 <main class="max-w-6xl mx-auto px-6 mt-6">
+
 <!-- VISTA STOCK -->
 <section id="view-stock" class="space-y-6">
 <div id="today-summary" class="glass border border-bakery-border rounded-3xl p-5 shadow-sm"></div>
@@ -746,6 +839,7 @@ background: #6b4220;
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="stock-grid"></div>
 </section>
+
 <!-- VISTA SEMANA -->
 <section id="view-week" class="hidden space-y-4">
 <div class="week-plan">
@@ -758,6 +852,7 @@ background: #6b4220;
 </div>
 </div>
 </section>
+
 <!-- VISTA CALENDARIO -->
 <section id="view-calendar" class="hidden space-y-4">
 <div class="bg-white border border-bakery-border rounded-3xl p-6 shadow-sm">
@@ -786,6 +881,7 @@ background: #6b4220;
 </div>
 </section>
 </main>
+
 <!-- PANEL LATERAL RÁPIDO -->
 <div id="quick-panel" class="slide-panel">
 <div class="close-btn">
@@ -796,6 +892,7 @@ background: #6b4220;
 <div id="quick-panel-services"></div>
 <button onclick="saveQuickPlan()" class="btn-save-quick">💾 Guardar cambios</button>
 </div>
+
 <!-- MODALES (REGLAS, PRODUCTOS, PROGRAMAR, NOMBRE, ACTIVIDAD) -->
 <!-- REGLAS SEMANALES -->
 <div id="modal-weekly-rules" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
@@ -814,6 +911,7 @@ background: #6b4220;
 </div>
 </div>
 </div>
+
 <!-- PRODUCTOS -->
 <div id="modal-products" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
 <div class="bg-white w-full max-w-3xl rounded-3xl p-6 shadow-2xl border border-bakery-border max-h-[96vh] overflow-y-auto">
@@ -844,6 +942,7 @@ background: #6b4220;
 </div>
 </div>
 </div>
+
 <!-- PROGRAMAR AMASADORA -->
 <div id="modal-schedule-bake" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[55] backdrop-blur-sm">
 <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl border border-bakery-border">
@@ -866,6 +965,7 @@ background: #6b4220;
 </div>
 </div>
 </div>
+
 <!-- NOMBRE -->
 <div id="modal-name" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-[60] backdrop-blur-sm">
 <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-bakery-border text-center">
@@ -879,6 +979,7 @@ background: #6b4220;
 </div>
 </div>
 </div>
+
 <!-- ACTIVIDAD -->
 <div id="modal-activity" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
 <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh] border border-bakery-border">
@@ -891,15 +992,18 @@ background: #6b4220;
 </div>
 </div>
 </div>
-<!-- ============================== JAVASCRIPT CON DEBUG ============================== -->
+
+<!-- ============================== JAVASCRIPT COMPLETO ============================== -->
 <script>
 console.log("🚀 Inicio del script principal");
+
 // ----- CONFIGURACIÓN -----
 const SERVICES_CONFIG = [
 { key: 'desayuno', name: 'Desayuno', icon: '☕', color: 'border-amber-200 bg-amber-50/10' },
 { key: 'comida', name: 'Comida', icon: '☀️', color: 'border-orange-200 bg-orange-50/10' },
 { key: 'evento', name: 'Evento Extra', icon: '🎉', color: 'border-purple-200 bg-purple-50/10' }
 ];
+
 const DEFAULT_BREADS = {
 hogazas_blancas: { name: 'Hogazas Blancas', type: 'Blanco', defaultBatch: 20 },
 hogazas_integrales: { name: 'Hogazas Integrales', type: 'Integral', defaultBatch: 20 },
@@ -908,6 +1012,7 @@ barras_integrales: { name: 'Barras Integrales', type: 'Integral', defaultBatch: 
 bollitos_blancos: { name: 'Bollitos Blancos', type: 'Blanco', defaultBatch: 100 },
 bollitos_integrales: { name: 'Bollitos Integrales', type: 'Integral', defaultBatch: 100 }
 };
+
 const BREAD_COLORS = {
 hogazas_blancas: { dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-300' },
 hogazas_integrales: { dot: 'bg-orange-700', text: 'text-orange-800', bg: 'bg-orange-50', border: 'border-orange-400' },
@@ -916,6 +1021,7 @@ barras_integrales: { dot: 'bg-blue-700', text: 'text-blue-800', bg: 'bg-blue-50'
 bollitos_blancos: { dot: 'bg-pink-500', text: 'text-pink-700', bg: 'bg-pink-50', border: 'border-pink-300' },
 bollitos_integrales: { dot: 'bg-purple-600', text: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-300' }
 };
+
 function getShortName(key) {
 const sn = {
 hogazas_blancas: 'H. Bl.',
@@ -927,6 +1033,7 @@ bollitos_integrales: 'Boll. Int.'
 };
 return sn[key] || key;
 }
+
 // ----- FIREBASE -----
 const firebaseConfig = {
 apiKey: "AIzaSyB-FDPCgEO7P_yt3746vEbtqV0ElGVxaas",
@@ -941,11 +1048,13 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const stateRef = db.ref('obrador_panaderia/estado_v2');
 const activityRef = db.ref('obrador_panaderia/actividad_v2');
+
 // ----- ESTADO GLOBAL -----
 let currentUserName = localStorage.getItem('panaderia_user_name') || '';
 let isApplyingRemoteUpdate = false;
 let firstSnapshotReceived = false;
 let lastActivityEntries = [];
+
 let state = {
 stock: {},
 plans: {},
@@ -956,6 +1065,7 @@ productSettings: {},
 customProducts: {},
 bakeSchedule: {}
 };
+
 function initDefaultState() {
 console.log("initDefaultState ejecutado");
 Object.keys(DEFAULT_BREADS).forEach(k => {
@@ -972,37 +1082,59 @@ if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false,
 }
 initDefaultState();
 console.log("Estado inicial:", state);
-// ----- MODO OSCURO MANUAL (toggle) -----
+
+// ----- FUNCIONES DEL MENÚ DESPLEGABLE -----
+function toggleConfigDropdown() {
+const dropdown = document.getElementById('configDropdown');
+dropdown.classList.toggle('show');
+}
+// Cerrar al hacer clic fuera
+document.addEventListener('click', function(e) {
+const container = document.querySelector('.dropdown-config');
+if (container && !container.contains(e.target)) {
+document.getElementById('configDropdown').classList.remove('show');
+}
+});
+
+// ----- MODO OSCURO -----
 function toggleDarkMode(btn) {
 const html = document.documentElement;
 if (html.style.colorScheme === 'dark') {
 html.style.colorScheme = 'light';
-btn.textContent = '🌙 Modo';
+if (btn) btn.textContent = '🌙 Modo Oscuro';
 } else {
 html.style.colorScheme = 'dark';
-btn.textContent = '☀️ Modo';
+if (btn) btn.textContent = '☀️ Modo Claro';
 }
 }
-// Detectar preferencia del sistema y aplicar por defecto
+
+// Detectar preferencia del sistema
 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 document.documentElement.style.colorScheme = 'dark';
-const darkBtn = document.getElementById('btn-dark-mode');
-if (darkBtn) darkBtn.textContent = '☀️ Modo';
+const darkBtn = document.getElementById('btn-dark-mode-config');
+if (darkBtn) darkBtn.textContent = '☀️ Modo Claro';
 }
+
 // ----- HELPERS -----
 function getTodayDateString() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
 function addDays(dateStr, days) { let [y, m, d] = dateStr.split('-'); let dt = new Date(y, m - 1, d);
 dt.setDate(dt.getDate() + days); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; }
+
 function getDayOfWeek(dateStr) { let [y, m, d] = dateStr.split('-'); return new Date(y, m - 1, d).getDay(); }
+
 function formatDate(dateStr) { let [y, m, d] = dateStr.split('-'); return `${d}/${m}`; }
+
 function getActiveBreadKeys() {
 return Object.keys(state.stock).filter(k => state.productSettings[k] && state.productSettings[k].enabled !== false);
 }
+
 function getBreadConfig(key) {
 if (DEFAULT_BREADS[key]) return DEFAULT_BREADS[key];
 if (state.customProducts[key]) return state.customProducts[key];
 return { name: key, type: 'Personalizado', defaultBatch: 20 };
 }
+
 function getEffectivePlan(dateStr) {
 if (state.plans[dateStr] && state.plans[dateStr].isException) {
 return state.plans[dateStr].services || {};
@@ -1010,12 +1142,15 @@ return state.plans[dateStr].services || {};
 const dow = getDayOfWeek(dateStr);
 return state.weeklyRules[dow] || {};
 }
+
 function getScheduledBakesForDate(dateStr) {
 return state.bakeSchedule[dateStr] || {};
 }
-// ----- MERMAS (simplificadas) -----
+
+// ----- MERMAS -----
 let depletionPending = false;
 let depletionData = null;
+
 function showDepletionPreview() {
 const todayStr = getTodayDateString();
 if (!state.lastProcessedDate) { state.lastProcessedDate = todayStr;
@@ -1033,6 +1168,7 @@ const plan = getEffectivePlan(nextDate);
 let previewLines = [];
 let tempStock = {};
 Object.keys(state.stock).forEach(k => { tempStock[k] = state.stock[k].qty; });
+
 SERVICES_CONFIG.forEach(svcConf => {
 const svc = plan[svcConf.key];
 if (svc && svc.active && svc.bread) {
@@ -1044,10 +1180,12 @@ tempStock[bKey] -= qty;
 });
 }
 });
+
 if (previewLines.length === 0) {
 document.getElementById('depletion-preview').classList.add('hidden');
 return;
 }
+
 const panel = document.getElementById('depletion-preview');
 const text = document.getElementById('depletion-preview-text');
 text.innerText = `Para el día ${formatDate(nextDate)} se descontarán:\n${previewLines.join('\n')}`;
@@ -1055,6 +1193,7 @@ panel.classList.remove('hidden');
 depletionPending = true;
 depletionData = { date: nextDate, plan: plan };
 }
+
 function applyDepletions() {
 if (!depletionData) return;
 const dateStr = depletionData.date;
@@ -1082,20 +1221,25 @@ document.getElementById('notification-panel').classList.remove('hidden');
 }
 renderAll();
 }
+
 function skipDepletions() {
 document.getElementById('depletion-preview').classList.add('hidden');
 depletionPending = false;
 depletionData = null;
 }
+
 function dismissNotification() { document.getElementById('notification-panel').classList.add('hidden'); }
+
 // ----- PROYECCIONES -----
 function calculateProjections() {
 let simStock = {};
 const activeKeys = getActiveBreadKeys();
 activeKeys.forEach(k => { simStock[k] = state.stock[k] ? state.stock[k].qty : 0; });
+
 let autonomyDates = {};
 let criticalOrders = [];
 let runnerStr = addDays(getTodayDateString(), 1);
+
 for (let i = 0; i < 45; i++) {
 const plan = getEffectivePlan(runnerStr);
 activeKeys.forEach(bKey => {
@@ -1123,6 +1267,7 @@ runnerStr = addDays(runnerStr, 1);
 }
 return { autonomy: autonomyDates, orders: criticalOrders };
 }
+
 function getWeekConsumption() {
 const today = getTodayDateString();
 const consumption = {};
@@ -1144,6 +1289,7 @@ consumption[bk] += qty;
 }
 return consumption;
 }
+
 // ----- AMASADORAS PENDIENTES -----
 function getPendingHarvests() {
 const today = getTodayDateString();
@@ -1160,6 +1306,7 @@ pending.push({ date: dateStr, bread: bk });
 });
 return pending;
 }
+
 function checkPendingHarvests() {
 const pending = getPendingHarvests();
 const panel = document.getElementById('harvest-panel');
@@ -1185,6 +1332,7 @@ badge2.classList.add('hidden');
 panel.classList.add('hidden');
 }
 }
+
 function harvestBake(dateStr, breadKey) {
 const scheduled = state.bakeSchedule[dateStr];
 if (!scheduled || !scheduled[breadKey]) return;
@@ -1207,6 +1355,7 @@ saveStateToCloud();
 renderAll();
 checkPendingHarvests();
 }
+
 // ----- PROGRAMAR AMASADORA -----
 function openScheduleModal(breadKey) {
 document.getElementById('schedule-bread-key').value = breadKey;
@@ -1215,7 +1364,9 @@ const tomorrow = addDays(getTodayDateString(), 1);
 document.getElementById('schedule-date').value = tomorrow;
 document.getElementById('modal-schedule-bake').classList.remove('hidden');
 }
+
 function closeScheduleModal() { document.getElementById('modal-schedule-bake').classList.add('hidden'); }
+
 function saveScheduledBake() {
 const breadKey = document.getElementById('schedule-bread-key').value;
 const date = document.getElementById('schedule-date').value;
@@ -1227,6 +1378,7 @@ closeScheduleModal();
 saveStateToCloud();
 renderAll();
 }
+
 // ----- RENDER STOCK -----
 function renderStock() {
 console.log("renderStock() ejecutado");
@@ -1234,12 +1386,15 @@ const grid = document.getElementById('stock-grid');
 if (!grid) { console.error("No se encontró #stock-grid"); return; }
 if (document.activeElement && document.activeElement.tagName === 'INPUT' && grid.contains(document.activeElement))
 return;
+
 let totalQty = 0;
 const activeKeys = getActiveBreadKeys();
 activeKeys.forEach(k => { totalQty += state.stock[k] ? state.stock[k].qty : 0; });
 document.getElementById('total-stock-count').innerText = totalQty;
+
 const proj = calculateProjections();
 const weekCons = getWeekConsumption();
+
 const alertPanel = document.getElementById('gentle-bake-alert');
 const alertText = document.getElementById('gentle-alert-text');
 if (proj.orders.length > 0) {
@@ -1250,6 +1405,7 @@ alertPanel.classList.remove('hidden');
 } else {
 alertPanel.classList.add('hidden');
 }
+
 grid.innerHTML = '';
 activeKeys.forEach(key => {
 const item = state.stock[key] || { qty: 0, margin: 5 };
@@ -1258,6 +1414,7 @@ const isEnabled = state.productSettings[key] && state.productSettings[key].enabl
 const margin = state.productSettings[key] ? state.productSettings[key].margin || 5 : 5;
 const isCritical = item.qty <= margin;
 const batchVal = state.tempBatchInputs[key] || config.defaultBatch || 20;
+
 let autonomyLabel = '';
 if (proj.autonomy[key]) {
 const [, m, d] = proj.autonomy[key].split('-');
@@ -1268,11 +1425,13 @@ autonomyLabel = `<span class="text-emerald-600 font-bold">🟢 +45 días</span>`
 if (isCritical) {
 autonomyLabel = `<span class="text-red-600 font-bold">⚠️ Bajo mínimos (${margin})</span>`;
 }
+
 const weekNeed = weekCons[key] || 0;
 const weekOk = item.qty >= weekNeed;
 const weekBadge = weekOk ?
 `<span class="badge-week-ok">✅ Semana cubierta</span>` :
 `<span class="badge-week-warn">⚠️ Insuficiente (necesitas ${weekNeed})</span>`;
+
 grid.innerHTML += `
 <div class="product-card ${isEnabled ? '' : 'disabled'} bg-white border ${isCritical ? 'border-red-300' : 'border-bakery-border'} rounded-3xl p-5 flex flex-col justify-between">
 <div>
@@ -1281,12 +1440,12 @@ grid.innerHTML += `
 ${weekBadge}
 </div>
 <div class="text-[10px] mt-1 bg-neutral-50 p-1.5 rounded-lg border border-neutral-100 flex items-center justify-between">
-<span class="text-neutral-500 uppercase font-bold tracking-wide">Autonomía:</span>
+<span class="text-neutral-500 uppercase font-bold tracking-wide">Autonomía:</span> 
 ${autonomyLabel}
 </div>
 <div class="flex flex-col items-center mt-6 mb-4">
 <div class="flex items-baseline gap-2">
-<input type="number" value="${item.qty}" min="0" onchange="setDirectQty('${key}', this.value)"
+<input type="number" value="${item.qty}" min="0" onchange="setDirectQty('${key}', this.value)" 
 class="w-20 bg-transparent border-b-2 border-dashed border-neutral-300 ${isCritical ? 'text-bakery-danger border-red-300' : 'text-bakery-primary'} text-4xl font-black focus:outline-none text-center">
 <span class="text-xs text-neutral-400">/ ${margin}</span>
 </div>
@@ -1305,6 +1464,7 @@ class="w-20 bg-transparent border-b-2 border-dashed border-neutral-300 ${isCriti
 `;
 });
 }
+
 function setDirectQty(k, v) {
 const newQty = Math.max(0, parseInt(v) || 0);
 if (newQty !== state.stock[k].qty) logActivity(`cambió ${getBreadConfig(k).name} a ${newQty} uds`);
@@ -1313,8 +1473,10 @@ saveStateToCloud();
 renderStock();
 renderTodaySummary();
 }
+
 function updateTempBatch(k, v) { state.tempBatchInputs[k] = parseInt(v) || 1;
 saveStateToCloud(); }
+
 function replenishBatch(k) {
 const inputVal = parseInt(document.getElementById(`batch-${k}`).value) || getBreadConfig(k).defaultBatch || 20;
 state.stock[k].qty += inputVal;
@@ -1323,6 +1485,7 @@ saveStateToCloud();
 renderStock();
 renderTodaySummary();
 }
+
 // ----- VISTA SEMANA (columnas) -----
 function renderWeekPlan() {
 console.log("renderWeekPlan() ejecutado");
@@ -1333,14 +1496,17 @@ const today = getTodayDateString();
 const activeKeys = getActiveBreadKeys();
 const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const proj = calculateProjections();
+
 const startDate = addDays(today, 1);
 const endDate = addDays(today, 7);
 document.getElementById('week-range').innerText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+
 for (let d = 1; d <= 7; d++) {
 const dateStr = addDays(today, d);
 const plan = getEffectivePlan(dateStr);
 const dow = getDayOfWeek(dateStr);
 const dayName = dayNames[dow === 0 ? 6 : dow - 1];
+
 let consumo = {};
 activeKeys.forEach(k => consumo[k] = 0);
 SERVICES_CONFIG.forEach(s => {
@@ -1351,13 +1517,17 @@ if (qty > 0 && consumo[bk] !== undefined) consumo[bk] += qty;
 });
 }
 });
+
 const bakes = getScheduledBakesForDate(dateStr);
 const hasBake = Object.keys(bakes).length > 0;
+
 const runOut = Object.keys(proj.autonomy).filter(bk => proj.autonomy[bk] === dateStr);
+
 const col = document.createElement('div');
 col.className = 'week-day-col';
 col.style.cursor = 'pointer';
 col.addEventListener('click', () => openQuickPanel(dateStr));
+
 const header = document.createElement('div');
 header.className = 'day-header';
 header.innerHTML = `
@@ -1365,6 +1535,7 @@ header.innerHTML = `
 <span class="date">${formatDate(dateStr)}</span>
 `;
 col.appendChild(header);
+
 const tasks = Object.entries(consumo).filter(([, qty]) => qty > 0);
 if (tasks.length === 0 && !hasBake && runOut.length === 0) {
 const noTask = document.createElement('div');
@@ -1381,6 +1552,7 @@ item.innerHTML = `
 `;
 col.appendChild(item);
 });
+
 if (hasBake) {
 const bakeDiv = document.createElement('div');
 bakeDiv.className = 'bake-task';
@@ -1388,6 +1560,7 @@ const items = Object.keys(bakes).map(bk => getShortName(bk)).join(', ');
 bakeDiv.textContent = `🧑‍🍳 ${items}`;
 col.appendChild(bakeDiv);
 }
+
 if (runOut.length) {
 const warn = document.createElement('div');
 warn.className = 'urgent-badge';
@@ -1395,25 +1568,30 @@ warn.textContent = `🔚 ${runOut.map(bk => getShortName(bk)).join(', ')}`;
 col.appendChild(warn);
 }
 }
+
 container.appendChild(col);
 }
 }
+
 // ----- RENDER CALENDARIO -----
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre",
 "Noviembre", "Diciembre"
 ];
+
 function renderCalendar() {
 console.log("renderCalendar() ejecutado");
 const grid = document.getElementById('calendar-grid');
 if (!grid) return;
 grid.innerHTML = '';
 document.getElementById('calendar-title').innerText = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+
 let firstDay = new Date(currentYear, currentMonth, 1).getDay();
 firstDay = firstDay === 0 ? 6 : firstDay - 1;
 const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 const todayStr = getTodayDateString();
+
 const proj = calculateProjections();
 const runOutByDate = {};
 Object.keys(proj.autonomy).forEach(bk => {
@@ -1421,6 +1599,7 @@ const date = proj.autonomy[bk];
 if (!runOutByDate[date]) runOutByDate[date] = [];
 runOutByDate[date].push(bk);
 });
+
 const legend = document.getElementById('autonomy-legend');
 const breadsWithAutonomy = Object.keys(proj.autonomy);
 if (breadsWithAutonomy.length) {
@@ -1434,8 +1613,11 @@ return `<span class="inline-flex items-center gap-1.5 text-[10px] font-bold ${c.
 } else {
 legend.innerHTML = `<span class="text-[10px] text-emerald-600 font-bold">🟢 Todo el stock cubre los próximos 45 días</span>`;
 }
+
 for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div class="bg-neutral-50/40 rounded-2xl min-h-[100px]"></div>`;
+
 let listItems = [];
+
 for (let day = 1; day <= daysInMonth; day++) {
 const dateStr =
 `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1444,6 +1626,7 @@ const plan = getEffectivePlan(dateStr);
 const scheduledBakes = getScheduledBakesForDate(dateStr);
 const hasScheduledBake = Object.keys(scheduledBakes).length > 0;
 const isPending = hasScheduledBake && dateStr < todayStr;
+
 let sHtml = [];
 SERVICES_CONFIG.forEach(s => {
 if (plan[s.key] && plan[s.key].active) {
@@ -1455,6 +1638,7 @@ if (totalB > 0) sHtml.push(
 );
 }
 });
+
 let runOutHtml = '';
 const runOutBreads = runOutByDate[dateStr];
 if (runOutBreads && runOutBreads.length) {
@@ -1464,6 +1648,7 @@ border: 'border-gray-300' };
 return `<span class="w-full text-[8px] font-bold ${c.text} ${c.bg} border ${c.border} rounded px-1 py-0.5 flex items-center gap-1 truncate" title="${getBreadConfig(bk).name} se agota"><span class="w-1.5 h-1.5 rounded-full ${c.dot} shrink-0"></span>${getShortName(bk)}</span>`;
 }).join('') + `</div>`;
 }
+
 let bakeHtml = '';
 if (hasScheduledBake) {
 const items = Object.keys(scheduledBakes).map(bk => getShortName(bk)).join(', ');
@@ -1472,11 +1657,13 @@ const pendingText = isPending ? '⏳ Pendiente' : '🧑‍🍳';
 bakeHtml =
 `<div class="mt-1 text-[8px] ${pendingClass} rounded px-1 py-0.5 font-bold truncate" title="Amasadora programada: ${items}">${pendingText} ${items}</div>`;
 }
+
 const highlight = dateStr === todayStr ? 'ring-2 ring-bakery-accent border-bakery-accent' : (runOutBreads ?
 'border-red-200' : 'border-bakery-border');
 const bgType = isException ? 'bg-amber-50/40 border-amber-200' : (sHtml.length > 0 ? 'bg-white' :
 'bg-neutral-50/50');
 const pendingClassBorder = isPending ? 'border-orange-400 bg-orange-50/30' : '';
+
 grid.innerHTML += `
 <div onclick="openQuickPanel('${dateStr}')" class="border ${highlight} ${bgType} ${pendingClassBorder} rounded-2xl p-2 min-h-[115px] flex flex-col justify-between cursor-pointer hover:shadow-md transition">
 <div>
@@ -1490,6 +1677,7 @@ ${runOutHtml}
 ${bakeHtml}
 </div>
 `;
+
 let details = [];
 if (sHtml.length) details.push(...sHtml.map(h => h.replace(/<[^>]*>/g, '').trim()));
 if (hasScheduledBake) {
@@ -1497,6 +1685,7 @@ const txt = Object.keys(scheduledBakes).map(bk => getShortName(bk)).join(', ');
 details.push(isPending ? `⏳ ${txt}` : `🧑‍🍳 ${txt}`);
 }
 if (runOutBreads && runOutBreads.length) details.push(`🔚 ${runOutBreads.map(bk => getShortName(bk)).join(', ')}`);
+
 listItems.push({
 day: day,
 dateStr: dateStr,
@@ -1506,6 +1695,7 @@ isPending: isPending,
 details: details.length ? details : ['⚙️ Auto (sin actividad)']
 });
 }
+
 const listContainer = document.getElementById('calendar-list');
 listContainer.innerHTML = listItems.map(item => `
 <div class="calendar-list-item" onclick="openQuickPanel('${item.dateStr}')">
@@ -1517,16 +1707,20 @@ ${item.isException ? '<span class="text-[8px] text-bakery-accent font-bold">📌
 </div>
 `).join('');
 }
+
 function changeMonth(dir) { currentMonth += dir; if (currentMonth > 11) { currentMonth = 0;
 currentYear++; } else if (currentMonth < 0) { currentMonth = 11;
 currentYear--; }
 renderCalendar(); }
+
 function setTodayMonth() { const t = new Date();
 currentYear = t.getFullYear();
 currentMonth = t.getMonth();
 renderCalendar(); }
+
 // ----- PANEL RÁPIDO -----
 let quickDate = '';
+
 function openQuickPanel(dateStr) {
 quickDate = dateStr;
 const plan = getEffectivePlan(dateStr);
@@ -1536,9 +1730,11 @@ document.getElementById('quick-panel-title').innerText = `Editar ${d}/${m}/${y}`
 document.getElementById('quick-panel-sub').innerHTML = isException ?
 `<span class="exception-badge">📌 Excepción manual</span> Modifica los consumos.` :
 'Modifica los consumos (se creará una excepción manual).';
+
 const container = document.getElementById('quick-panel-services');
 container.innerHTML = '';
 const activeKeys = getActiveBreadKeys();
+
 SERVICES_CONFIG.forEach(svcConf => {
 const svc = plan[svcConf.key] || { active: false, bread: {} };
 const div = document.createElement('div');
@@ -1566,12 +1762,15 @@ container.appendChild(div);
 });
 document.getElementById('quick-panel').classList.add('open');
 }
+
 function closeQuickPanel() { document.getElementById('quick-panel').classList.remove('open'); }
+
 function saveQuickPlan() {
 const dateStr = quickDate;
 if (!state.plans[dateStr]) state.plans[dateStr] = {};
 state.plans[dateStr].isException = true;
 state.plans[dateStr].services = {};
+
 let summary = [];
 const activeKeys = getActiveBreadKeys();
 SERVICES_CONFIG.forEach(s => {
@@ -1587,24 +1786,30 @@ const details = Object.entries(state.plans[dateStr].services[s.key].bread).filte
 summary.push(details ? `${s.name} (${details})` : s.name);
 }
 });
+
 const [, m, d] = dateStr.split('-');
 logActivity(summary.length ? `planificó excepción el ${d}/${m}: ${summary.join(' + ')}` :
 `vació la planificación del ${d}/${m}`);
+
 closeQuickPanel();
 saveStateToCloud();
 renderAll();
 }
+
 // ----- MODALES: REGLAS SEMANALES -----
 function openWeeklyRulesModal() {
 renderWeeklyRules();
 document.getElementById('modal-weekly-rules').classList.remove('hidden');
 }
+
 function closeWeeklyRulesModal() { document.getElementById('modal-weekly-rules').classList.add('hidden'); }
+
 function renderWeeklyRules() {
 const container = document.getElementById('weekly-rules-container');
 container.innerHTML = '';
 const activeKeys = getActiveBreadKeys();
 const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
 const cols = SERVICES_CONFIG.map(svcConf => {
 const colDiv = document.createElement('div');
 colDiv.className = 'weekly-service-col';
@@ -1632,10 +1837,12 @@ return `<label><span>${getShortName(bk)}</span><input type="number" class="weekl
 colDiv.innerHTML = html;
 return colDiv;
 });
+
 const gridDiv = document.createElement('div');
 gridDiv.className = 'weekly-rules-grid';
 cols.forEach(col => gridDiv.appendChild(col));
 container.appendChild(gridDiv);
+
 document.querySelectorAll('.weekly-svc-toggle').forEach(el => {
 el.addEventListener('change', function() {
 const dow = this.dataset.dow;
@@ -1647,6 +1854,7 @@ inputs.forEach(inp => { inp.disabled = !isChecked; });
 });
 });
 }
+
 function saveWeeklyRules() {
 const activeKeys = getActiveBreadKeys();
 for (let dow = 0; dow <= 6; dow++) {
@@ -1659,6 +1867,7 @@ if (!state.weeklyRules[dow][svcConf.key]) state.weeklyRules[dow][svcConf.key] = 
 bread: {} };
 state.weeklyRules[dow][svcConf.key].active = isActive;
 if (!state.weeklyRules[dow][svcConf.key].bread) state.weeklyRules[dow][svcConf.key].bread = {};
+
 const inputs = document.querySelectorAll(
 `.weekly-bread-input[data-dow="${dow}"][data-svc="${svcConf.key}"]`);
 inputs.forEach(inp => {
@@ -1673,22 +1882,27 @@ closeWeeklyRulesModal();
 saveStateToCloud();
 renderAll();
 }
+
 // ----- MODALES: PRODUCTOS -----
 function openProductsModal() {
 renderProductsList();
 document.getElementById('modal-products').classList.remove('hidden');
 }
+
 function closeProductsModal() { document.getElementById('modal-products').classList.add('hidden'); }
+
 function renderProductsList() {
 const container = document.getElementById('products-list-container');
 container.innerHTML = '';
 const allKeys = Object.keys(state.stock);
+
 allKeys.forEach(key => {
 const config = getBreadConfig(key);
 const isCustom = !!state.customProducts[key];
 const settings = state.productSettings[key] || { enabled: true, margin: 5 };
 const margin = settings.margin || 5;
 const enabled = settings.enabled !== false;
+
 container.innerHTML += `
 <div class="flex items-center gap-3 bg-neutral-50 p-3 rounded-xl border border-bakery-border">
 <div class="flex-1 min-w-0">
@@ -1710,6 +1924,7 @@ ${isCustom ? `<button onclick="removeCustomProduct('${key}')" class="text-red-50
 `;
 });
 }
+
 function saveProductSettings() {
 document.querySelectorAll('.product-margin-input').forEach(inp => {
 const key = inp.dataset.key;
@@ -1728,6 +1943,7 @@ closeProductsModal();
 saveStateToCloud();
 renderAll();
 }
+
 function addCustomProduct() {
 const name = document.getElementById('new-product-name').value.trim();
 const type = document.getElementById('new-product-type').value;
@@ -1744,6 +1960,7 @@ renderProductsList();
 saveStateToCloud();
 renderAll();
 }
+
 function removeCustomProduct(key) {
 if (!confirm(`¿Eliminar "${getBreadConfig(key).name}"?`)) return;
 delete state.customProducts[key];
@@ -1755,6 +1972,7 @@ saveStateToCloud();
 renderProductsList();
 renderAll();
 }
+
 // ----- ACTIVIDAD / LOG -----
 function logActivity(text) {
 activityRef.push({
@@ -1763,6 +1981,7 @@ text: text,
 ts: firebase.database.ServerValue.TIMESTAMP
 }).catch(() => {});
 }
+
 function renderActivityLog(entries) {
 lastActivityEntries = entries;
 const list = document.getElementById('activity-log-list');
@@ -1778,28 +1997,38 @@ list.innerHTML = entries.map(e => `
 </div>
 `).join('');
 }
+
 function escapeHtml(str) { const d = document.createElement('div');
 d.textContent = str == null ? '' : String(str); return d.innerHTML; }
+
 function timeAgo(ts) { if (!ts) return ''; const diffSec = Math.max(0, Math.floor((Date.now() - ts) / 1000)); if (diffSec <
 60) return 'Hace un momento'; const diffMin = Math.floor(diffSec / 60); if (diffMin < 60) return `Hace ${diffMin} min`;
 const diffH = Math.floor(diffMin / 60); if (diffH < 24) return `Hace ${diffH} h`; return `Hace ${Math.floor(diffH/24)} d`; }
+
 function openActivityModal() { document.getElementById('modal-activity').classList.remove('hidden');
 renderActivityLog(lastActivityEntries); }
+
 function closeActivityModal() { document.getElementById('modal-activity').classList.add('hidden'); }
+
 // ----- IDENTIDAD -----
 function updateUserNameButton() {
 const label = document.getElementById('btn-user-name-label');
 if (label) label.innerText = currentUserName || 'Identificarme';
 }
+
 function ensureUserName() { updateUserNameButton(); if (!currentUserName) openNameModal(); }
+
 function openNameModal() { document.getElementById('input-user-name').value = currentUserName;
 document.getElementById('modal-name').classList.remove('hidden'); }
+
 function closeNameModal() { document.getElementById('modal-name').classList.add('hidden'); }
+
 function saveUserName() { const val = document.getElementById('input-user-name').value.trim(); if (val) { currentUserName = val
 .slice(0, 24);
 localStorage.setItem('panaderia_user_name', currentUserName);
 updateUserNameButton(); }
 closeNameModal(); }
+
 // ----- SINCRO CON FIREBASE -----
 function initRealtimeSync() {
 console.log("initRealtimeSync() ejecutado");
@@ -1813,6 +2042,7 @@ status.innerText = '🔴 Offline';
 status.className = 'text-[10px] text-red-500 font-mono bg-red-50/50 px-2 py-0.5 rounded-full';
 }
 });
+
 stateRef.on('value', snapshot => {
 console.log("📦 Datos recibidos de Firebase");
 const cloudData = snapshot.val();
@@ -1829,6 +2059,7 @@ checkPendingHarvests();
 renderAll();
 document.getElementById('last-updated-time').innerText = `Última actualización: ${new Date().toLocaleTimeString()}`;
 });
+
 activityRef.limitToLast(30).on('value', (snapshot) => {
 const entries = [];
 snapshot.forEach(child => { entries.push(child.val()); });
@@ -1836,6 +2067,7 @@ entries.reverse();
 renderActivityLog(entries);
 });
 }
+
 function mergeCloudStates(parsed) {
 console.log("mergeCloudStates", parsed);
 if (parsed.stock) Object.keys(parsed.stock).forEach(k => { if (!state.stock[k]) state.stock[k] = { qty: 0,
@@ -1859,6 +2091,7 @@ if (!state.weeklyRules[i][s.key]) state.weeklyRules[i][s.key] = { active: false,
 });
 }
 }
+
 function saveStateToCloud() {
 if (isApplyingRemoteUpdate) return Promise.resolve();
 document.getElementById('sync-status').innerText = '⏳ Guardando...';
@@ -1866,6 +2099,7 @@ return stateRef.set(state).then(() => {
 document.getElementById('sync-status').innerText = '🟢 Sincronizado';
 });
 }
+
 // ----- RESUMEN DE HOY -----
 function renderTodaySummary() {
 console.log("renderTodaySummary() ejecutado");
@@ -1875,6 +2109,7 @@ const todayStr = getTodayDateString();
 const plan = getEffectivePlan(todayStr);
 const proj = calculateProjections();
 const todayLabel = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
 let badges = [];
 SERVICES_CONFIG.forEach(s => {
 const svc = plan[s.key];
@@ -1888,12 +2123,14 @@ if (details.length) badges.push(
 );
 }
 });
+
 const criticalToday = proj.orders.filter(o => o.date === todayStr).map(o => getShortName(o.bread));
 if (criticalToday.length) {
 badges.push(
 `<span class="inline-flex items-center gap-1 bg-red-50 text-red-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-200">🥣 Toca amasar hoy: ${criticalToday.join(', ')}</span>`
 );
 }
+
 const criticalNow = Object.entries(state.stock).filter(([k, i]) => {
 const settings = state.productSettings[k];
 if (!settings || settings.enabled === false) return false;
@@ -1905,6 +2142,7 @@ badges.push(
 `<span class="inline-flex items-center gap-1 bg-red-50 text-bakery-danger text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-red-100">⚠️ Bajo mínimos: ${criticalNow.join(', ')}</span>`
 );
 }
+
 const todayBakes = getScheduledBakesForDate(todayStr);
 if (Object.keys(todayBakes).length) {
 const txt = Object.keys(todayBakes).map(bk => getShortName(bk)).join(', ');
@@ -1912,6 +2150,7 @@ badges.push(
 `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] font-bold px-2.5 py-1.5 rounded-full border border-blue-200">🧑‍🍳 Amasadora programada: ${txt}</span>`
 );
 }
+
 container.innerHTML = `
 <p class="text-[10px] uppercase tracking-wider font-bold text-neutral-400 mb-2">📅 Hoy · ${todayLabel}</p>
 <div class="flex flex-wrap gap-2">
@@ -1919,6 +2158,7 @@ ${badges.length ? badges.join('') : '<span class="text-xs text-neutral-400">Nada
 </div>
 `;
 }
+
 // ----- NAVEGACIÓN -----
 function switchView(view) {
 console.log("switchView:", view);
@@ -1930,16 +2170,17 @@ document.getElementById('view-week').classList.toggle('hidden', !isWeek);
 document.getElementById('view-calendar').classList.toggle('hidden', !isCal);
 document.getElementById('btn-stock').className = isStock ?
 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
-"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary"
 document.getElementById('btn-week').className = isWeek ?
 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
-"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary"
 document.getElementById('btn-calendar').className = isCal ?
 "px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100" :
-"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary";
+"px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary"
 if (isWeek) renderWeekPlan();
 else renderAll();
 }
+
 // ----- RENDER ALL -----
 function renderAll() {
 console.log("renderAll() ejecutado");
@@ -1948,6 +2189,7 @@ renderCalendar();
 renderTodaySummary();
 checkPendingHarvests();
 }
+
 // ----- INICIO -----
 window.onload = function() {
 console.log("🚀 window.onload ejecutado");
