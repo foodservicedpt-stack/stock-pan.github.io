@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock & Amasado v2.4 — Obrador Colaborativo</title>
-    <meta name="description" content="Panel colaborativo v2.4: gestión de stock, planificación semanal, amasadoras, comentarios y tour guiado." />
+    <title>Stock & Amasado v2.5 — Obrador Colaborativo</title>
+    <meta name="description" content="Panel colaborativo v2.5: gestión de stock, planificación semanal, amasadoras, comentarios, tour guiado y reprocesamiento automático." />
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#4A2C11">
     <script src="https://cdn.tailwindcss.com">
@@ -596,7 +596,7 @@
     <header class="max-w-6xl mx-auto px-6 pt-10 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador v2.4</span>
+                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador v2.5</span>
                 <span id="sync-status" class="text-[10px] text-amber-700 font-mono bg-amber-50/50 px-2 py-0.5 rounded-full">Sincronizado</span>
                 <span id="pending-badge" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
                 <span id="comment-badge" class="hidden text-xs font-bold bg-blue-500 text-white px-2 py-0.5 rounded-full">💬 0</span>
@@ -1009,11 +1009,10 @@
             if (darkBtn) darkBtn.textContent = '☀️ Modo Claro';
         }
 
-        // ----- PERSONALIZACIÓN (21) -----
+        // ----- PERSONALIZACIÓN -----
         function setThemeColor(color) {
             document.documentElement.style.setProperty('--primary-color', color);
             localStorage.setItem('themeColor', color);
-            // Actualizar elementos
             document.querySelectorAll('.grad-accent, .bg-bakery-primary, .text-bakery-primary, .border-bakery-accent')
                 .forEach(el => {
                     if (el.classList.contains('grad-accent')) {
@@ -1056,7 +1055,7 @@
             document.getElementById('modal-theme').classList.add('hidden');
         }
 
-        // ----- COMENTARIOS (9) -----
+        // ----- COMENTARIOS -----
         let quickDate = '';
 
         function loadCommentsForDate(dateStr) {
@@ -1096,7 +1095,7 @@
             });
         }
 
-        // ----- PRODUCCIÓN (22) -----
+        // ----- PRODUCCIÓN (checklist) -----
         function renderProductionChecklist() {
             const container = document.getElementById('production-checklist');
             if (!container) return;
@@ -1145,7 +1144,7 @@
             setTimeout(renderProductionChecklist, 300);
         }
 
-        // ----- TOUR GUIADO (28) -----
+        // ----- TOUR GUIADO -----
         let tourSteps = [];
         let currentStep = 0;
         let tourActive = false;
@@ -1253,6 +1252,80 @@
             return state.bakeSchedule[dateStr] || {};
         }
 
+        // ----- NUEVA FUNCIÓN DE REPROCESAMIENTO (v2.5) -----
+        function recalculateStockFrom(dateStr) {
+            return new Promise((resolve, reject) => {
+                // 1. Obtener el stock del día anterior a dateStr
+                const prevDate = addDays(dateStr, -1);
+                const prevStockRef = db.ref('obrador_panaderia/dailyStock/' + prevDate);
+                prevStockRef.once('value', snap => {
+                    let stock = snap.val() || {};
+                    // Si no hay histórico, usar el stock actual como base (poco fiable pero mejor que nada)
+                    if (Object.keys(stock).length === 0) {
+                        stock = {};
+                        Object.keys(state.stock).forEach(k => {
+                            stock[k] = state.stock[k].qty;
+                        });
+                        logActivity(`⚠️ No se encontró historial para ${formatDate(prevDate)}, usando stock actual como base.`);
+                    }
+
+                    // 2. Aplicar consumos desde dateStr hasta hoy (inclusive)
+                    let currentDate = dateStr;
+                    const today = getTodayDateString();
+                    // Clonar el stock para no modificar el original hasta el final
+                    let simStock = { ...stock };
+                    while (currentDate <= today) {
+                        const plan = getEffectivePlan(currentDate); // usa la nueva excepción
+                        // Descontar según servicios
+                        SERVICES_CONFIG.forEach(svcConf => {
+                            const svc = plan[svcConf.key];
+                            if (svc && svc.active && svc.bread) {
+                                Object.entries(svc.bread).forEach(([bk, qty]) => {
+                                    if (qty > 0 && simStock[bk] !== undefined) {
+                                        simStock[bk] = Math.max(0, simStock[bk] - qty);
+                                    }
+                                });
+                            }
+                        });
+                        // Aplicar amasadoras registradas en ese día (suman stock)
+                        const bakes = getScheduledBakesForDate(currentDate);
+                        Object.entries(bakes).forEach(([bk, qty]) => {
+                            // qty es booleano (true) porque solo guardamos la programación, no la cantidad
+                            // Pero la cantidad real se preguntó al registrar, así que aquí sumamos 0 porque la producción ya se registró en harvestBake
+                            // Para evitar doble contabilidad, no sumamos nada; el stock ya se incrementó cuando se registró la producción.
+                            // Sin embargo, si la amasadora está programada y no registrada, no se sumará.
+                            // Si está registrada, el stock ya lo incluye.
+                            // Por tanto, no hacemos nada aquí para no duplicar.
+                        });
+                        // También hay que aplicar las amasadoras que se registraron en el período (harvestBake ya las sumó al stock)
+                        // Pero como trabajamos con el stock histórico, el stock ya incluye esas sumas.
+                        // Por tanto, solo descontamos los consumos.
+                        currentDate = addDays(currentDate, 1);
+                    }
+
+                    // 3. Actualizar el estado global y Firebase
+                    let updated = false;
+                    Object.keys(simStock).forEach(k => {
+                        if (state.stock[k] !== undefined && state.stock[k].qty !== simStock[k]) {
+                            state.stock[k].qty = simStock[k];
+                            updated = true;
+                        }
+                    });
+                    if (updated) {
+                        state.lastProcessedDate = today;
+                        logActivity(`🔄 Recalculado stock desde ${formatDate(dateStr)} hasta hoy.`);
+                        saveStateToCloud();
+                        // Guardar dailyStock para hoy (opcional)
+                        db.ref('obrador_panaderia/dailyStock/' + today).set(simStock);
+                        renderAll();
+                        resolve();
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        }
+
         // ----- MERMAS -----
         let depletionPending = false;
         let depletionData = null;
@@ -1302,6 +1375,7 @@
             const dateStr = depletionData.date;
             const plan = depletionData.plan;
             let logs = [];
+            let stockSnapshot = { ...state.stock };
             SERVICES_CONFIG.forEach(svcConf => {
                 const svc = plan[svcConf.key];
                 if (svc && svc.active && svc.bread) {
@@ -1314,6 +1388,8 @@
                 }
             });
             state.lastProcessedDate = dateStr;
+            // Guardar dailyStock para hoy
+            db.ref('obrador_panaderia/dailyStock/' + dateStr).set({ ...state.stock });
             saveStateToCloud();
             document.getElementById('depletion-preview').classList.add('hidden');
             depletionPending = false;
@@ -1452,6 +1528,9 @@
             if (Object.keys(scheduled).length === 0) {
                 delete state.bakeSchedule[dateStr];
             }
+            // Guardar dailyStock del día actual (con la suma)
+            const today = getTodayDateString();
+            db.ref('obrador_panaderia/dailyStock/' + today).set({ ...state.stock });
             saveStateToCloud();
             renderAll();
             checkPendingHarvests();
@@ -1791,7 +1870,7 @@
             currentMonth = t.getMonth();
             renderCalendar(); }
 
-        // ----- PANEL RÁPIDO (con comentarios) -----
+        // ----- PANEL RÁPIDO (con comentarios y reprocesamiento) -----
         function openQuickPanel(dateStr) {
             quickDate = dateStr;
             const plan = getEffectivePlan(dateStr);
@@ -1859,9 +1938,22 @@
             const [, m, d] = dateStr.split('-');
             logActivity(summary.length ? `planificó excepción el ${d}/${m}: ${summary.join(' + ')}` :
                 `vació la planificación del ${d}/${m}`);
-            closeQuickPanel();
-            saveStateToCloud();
-            renderAll();
+            // Guardar primero en Firebase
+            saveStateToCloud().then(() => {
+                // Si la fecha ya fue procesada, recalcular
+                if (dateStr <= state.lastProcessedDate) {
+                    recalculateStockFrom(dateStr).then(() => {
+                        closeQuickPanel();
+                        renderAll();
+                    });
+                } else {
+                    closeQuickPanel();
+                    renderAll();
+                }
+            }).catch(() => {
+                closeQuickPanel();
+                renderAll();
+            });
         }
 
         // ----- MODALES: REGLAS SEMANALES -----
@@ -2245,7 +2337,7 @@
 
         // ----- INICIO -----
         window.onload = function() {
-            console.log("🚀 Iniciando v2.4 con tour, temas, comentarios y checklist");
+            console.log("🚀 Iniciando v2.5 con reprocesamiento automático");
             initRealtimeSync();
             ensureUserName();
             setTimeout(startTour, 1500);
