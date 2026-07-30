@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock & Amasado v2.5 — Obrador Colaborativo</title>
-    <meta name="description" content="Panel colaborativo v2.5: gestión de stock, planificación semanal, amasadoras, comentarios, tour guiado y reprocesamiento automático." />
+    <title>Stock & Amasado v2.5.1 — Obrador Colaborativo</title>
+    <meta name="description" content="Panel colaborativo v2.5.1: gestión de stock, planificación semanal, amasadoras, comentarios, tour guiado y reprocesamiento automático." />
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#4A2C11">
     <script src="https://cdn.tailwindcss.com">
@@ -596,7 +596,7 @@
     <header class="max-w-6xl mx-auto px-6 pt-10 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <div class="flex items-center gap-3 flex-wrap">
-                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador v2.5</span>
+                <span class="text-xs font-bold tracking-widest text-white grad-accent px-2.5 py-1 rounded-lg uppercase shadow-sm">Obrador v2.5.1</span>
                 <span id="sync-status" class="text-[10px] text-amber-700 font-mono bg-amber-50/50 px-2 py-0.5 rounded-full">Sincronizado</span>
                 <span id="pending-badge" class="hidden text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">0</span>
                 <span id="comment-badge" class="hidden text-xs font-bold bg-blue-500 text-white px-2 py-0.5 rounded-full">💬 0</span>
@@ -606,7 +606,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-1.5 bg-neutral-200/50 p-1.5 rounded-2xl shadow-inner">
             <button onclick="switchView('stock')" id="btn-stock" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition bg-white text-bakery-primary shadow-sm border border-neutral-100">📦 Stock</button>
-            <button onclick="switchView('week')" id="btn-week" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Semana</button>
+            <button onclick="switchView('week')" id="btn-week" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">🗓️ Semana</button>
             <button onclick="switchView('calendar')" id="btn-calendar" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📅 Calendario</button>
             <button onclick="switchView('production')" id="btn-production" class="px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition text-neutral-500 hover:text-bakery-primary">📋 Producción</button>
             <div class="dropdown-config">
@@ -631,20 +631,7 @@
 
     <hr class="border-bakery-border max-w-6xl mx-auto my-2 px-6">
 
-    <!-- ===== PANELES DE AVISO ===== -->
-    <!-- Previsión de mermas -->
-    <div id="depletion-preview" class="max-w-6xl mx-auto px-6 mt-4 hidden">
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
-            <h4 class="text-amber-900 font-bold text-sm flex items-center gap-2">📉 Previsión de mermas para mañana</h4>
-            <p id="depletion-preview-text" class="text-xs text-amber-800 mt-1 whitespace-pre-line"></p>
-            <div class="flex gap-3 mt-3">
-                <button onclick="applyDepletions()" class="bg-amber-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-700">✅ Aplicar mermas</button>
-                <button onclick="skipDepletions()" class="border border-amber-300 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-100">⏭️ Omitir hoy</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Notificaciones (mermas ya aplicadas) -->
+    <!-- ===== NOTIFICACIONES (mermas aplicadas) ===== -->
     <div id="notification-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
         <div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm">
             <span class="text-lg">📉</span>
@@ -656,7 +643,7 @@
         </div>
     </div>
 
-    <!-- Amasadoras pendientes -->
+    <!-- ===== AMASADORAS PENDIENTES ===== -->
     <div id="harvest-panel" class="max-w-6xl mx-auto px-6 mt-4 hidden">
         <div class="bg-green-50 border border-green-200 rounded-2xl p-4 shadow-sm">
             <h4 class="text-green-900 font-bold text-sm flex items-center gap-2">🧑‍🍳 Amasadoras pendientes de registrar</h4>
@@ -664,7 +651,7 @@
         </div>
     </div>
 
-    <!-- Aviso suave -->
+    <!-- ===== AVISO SUAVE ===== -->
     <div id="gentle-bake-alert" class="max-w-6xl mx-auto px-6 mt-2 hidden">
         <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3 text-xs text-amber-800 flex items-center gap-2">
             <span>⏳</span>
@@ -694,7 +681,7 @@
         <section id="view-week" class="hidden space-y-4">
             <div class="week-plan">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-lg font-serif font-bold text-bakery-primary">📅 Planificación de la semana</h3>
+                    <h3 class="text-lg font-serif font-bold text-bakery-primary">🗓️ Planificación de la semana</h3>
                     <span class="text-xs text-neutral-400" id="week-range"></span>
                 </div>
                 <div id="week-grid-container" class="week-grid"></div>
@@ -706,7 +693,7 @@
             <div class="bg-white border border-bakery-border rounded-3xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-2xl font-serif font-bold text-bakery-primary" id="calendar-title">Mes Año</h2>
+                        <h2 class="text-2xl font-serif font-bold text-bakery-primary" id="calendar-title">📅 Calendario</h2>
                         <p class="text-xs text-neutral-400 mt-1 flex gap-4">
                             <span><span class="opacity-50">⚙️ Auto</span> = Regla semanal</span>
                             <span><span class="text-bakery-accent font-bold">📌 Modificado</span> = Excepción manual</span>
@@ -1153,7 +1140,7 @@
             if (localStorage.getItem('tourSeen') === 'true') return;
             tourSteps = [
                 { target: '#btn-stock', title: '📦 Stock', desc: 'Aquí ves el stock actual de cada producto. Puedes añadir stock manualmente o programar amasadoras.' },
-                { target: '#btn-week', title: '📅 Semana', desc: 'Planificación de los próximos 7 días. Cada columna muestra lo que se consume y las amasadoras programadas.' },
+                { target: '#btn-week', title: '🗓️ Semana', desc: 'Planificación de los próximos 7 días. Cada columna muestra lo que se consume y las amasadoras programadas.' },
                 { target: '#btn-calendar', title: '📅 Calendario', desc: 'Vista mensual con todos los consumos, amasadoras y fechas de agotamiento.' },
                 { target: '#btn-production', title: '📋 Producción', desc: 'Checklist de las amasadoras programadas para hoy. Marca las que ya has hecho.' },
                 { target: '.dropdown-config', title: '⚙️ Configuración', desc: 'Aquí puedes gestionar reglas semanales, productos, personalizar colores y reiniciar el tour.' },
@@ -1252,7 +1239,7 @@
             return state.bakeSchedule[dateStr] || {};
         }
 
-        // ----- NUEVA FUNCIÓN DE REPROCESAMIENTO (v2.5) -----
+        // ----- FUNCIÓN DE REPROCESAMIENTO (v2.5) -----
         function recalculateStockFrom(dateStr) {
             return new Promise((resolve, reject) => {
                 // 1. Obtener el stock del día anterior a dateStr
@@ -1288,18 +1275,7 @@
                             }
                         });
                         // Aplicar amasadoras registradas en ese día (suman stock)
-                        const bakes = getScheduledBakesForDate(currentDate);
-                        Object.entries(bakes).forEach(([bk, qty]) => {
-                            // qty es booleano (true) porque solo guardamos la programación, no la cantidad
-                            // Pero la cantidad real se preguntó al registrar, así que aquí sumamos 0 porque la producción ya se registró en harvestBake
-                            // Para evitar doble contabilidad, no sumamos nada; el stock ya se incrementó cuando se registró la producción.
-                            // Sin embargo, si la amasadora está programada y no registrada, no se sumará.
-                            // Si está registrada, el stock ya lo incluye.
-                            // Por tanto, no hacemos nada aquí para no duplicar.
-                        });
-                        // También hay que aplicar las amasadoras que se registraron en el período (harvestBake ya las sumó al stock)
-                        // Pero como trabajamos con el stock histórico, el stock ya incluye esas sumas.
-                        // Por tanto, solo descontamos los consumos.
+                        // Nota: las amasadoras ya se sumaron al registrar la producción, no sumamos aquí.
                         currentDate = addDays(currentDate, 1);
                     }
 
@@ -1326,88 +1302,54 @@
             });
         }
 
-        // ----- MERMAS -----
-        let depletionPending = false;
-        let depletionData = null;
-
-        function showDepletionPreview() {
+        // ----- PROCESAMIENTO AUTOMÁTICO DE MERMAS (sin confirmación) -----
+        function processAutoDepletions() {
             const todayStr = getTodayDateString();
-            if (!state.lastProcessedDate) { state.lastProcessedDate = todayStr;
-                saveStateToCloud(); return; }
-            if (state.lastProcessedDate >= todayStr) {
-                document.getElementById('depletion-preview').classList.add('hidden');
+            if (!state.lastProcessedDate) {
+                state.lastProcessedDate = todayStr;
+                saveStateToCloud();
                 return;
             }
-            const nextDate = addDays(state.lastProcessedDate, 1);
-            if (nextDate > todayStr) {
-                document.getElementById('depletion-preview').classList.add('hidden');
-                return;
-            }
-            const plan = getEffectivePlan(nextDate);
-            let previewLines = [];
-            let tempStock = {};
-            Object.keys(state.stock).forEach(k => { tempStock[k] = state.stock[k].qty; });
-            SERVICES_CONFIG.forEach(svcConf => {
-                const svc = plan[svcConf.key];
-                if (svc && svc.active && svc.bread) {
-                    Object.entries(svc.bread).forEach(([bKey, qty]) => {
-                        if (qty > 0 && state.stock[bKey]) {
-                            previewLines.push(`• ${getBreadConfig(bKey).name}: -${qty} uds (quedarán ${Math.max(0, tempStock[bKey] - qty)})`);
-                            tempStock[bKey] -= qty;
-                        }
-                    });
-                }
-            });
-            if (previewLines.length === 0) {
-                document.getElementById('depletion-preview').classList.add('hidden');
-                return;
-            }
-            const panel = document.getElementById('depletion-preview');
-            const text = document.getElementById('depletion-preview-text');
-            text.innerText = `Para el día ${formatDate(nextDate)} se descontarán:\n${previewLines.join('\n')}`;
-            panel.classList.remove('hidden');
-            depletionPending = true;
-            depletionData = { date: nextDate, plan: plan };
-        }
+            if (state.lastProcessedDate >= todayStr) return;
 
-        function applyDepletions() {
-            if (!depletionData) return;
-            const dateStr = depletionData.date;
-            const plan = depletionData.plan;
-            let logs = [];
-            let stockSnapshot = { ...state.stock };
-            SERVICES_CONFIG.forEach(svcConf => {
-                const svc = plan[svcConf.key];
-                if (svc && svc.active && svc.bread) {
-                    Object.entries(svc.bread).forEach(([bKey, qty]) => {
-                        if (qty > 0 && state.stock[bKey]) {
-                            state.stock[bKey].qty = Math.max(0, state.stock[bKey].qty - qty);
-                            logs.push(`${getShortName(bKey)} (-${qty})`);
-                        }
-                    });
+            let runnerStr = addDays(state.lastProcessedDate, 1);
+            let allLogs = [];
+            while (runnerStr <= todayStr) {
+                const plan = getEffectivePlan(runnerStr);
+                let logs = [];
+                SERVICES_CONFIG.forEach(svcConf => {
+                    const svc = plan[svcConf.key];
+                    if (svc && svc.active && svc.bread) {
+                        Object.entries(svc.bread).forEach(([bKey, qty]) => {
+                            if (qty > 0 && state.stock[bKey]) {
+                                state.stock[bKey].qty = Math.max(0, state.stock[bKey].qty - qty);
+                                logs.push(`${getShortName(bKey)} (-${qty})`);
+                            }
+                        });
+                    }
+                });
+                if (logs.length > 0) {
+                    allLogs.push(`• ${formatDate(runnerStr)}: ${logs.join(', ')}`);
                 }
-            });
-            state.lastProcessedDate = dateStr;
-            // Guardar dailyStock para hoy
-            db.ref('obrador_panaderia/dailyStock/' + dateStr).set({ ...state.stock });
-            saveStateToCloud();
-            document.getElementById('depletion-preview').classList.add('hidden');
-            depletionPending = false;
-            depletionData = null;
-            if (logs.length) {
-                document.getElementById('notification-text-content').innerText = `• ${formatDate(dateStr)}: ${logs.join(', ')}`;
+                // Guardar dailyStock para este día
+                db.ref('obrador_panaderia/dailyStock/' + runnerStr).set({ ...state.stock });
+                runnerStr = addDays(runnerStr, 1);
+            }
+
+            if (allLogs.length > 0) {
+                state.lastProcessedDate = todayStr;
+                saveStateToCloud();
+                document.getElementById('notification-text-content').innerText = allLogs.join('\n');
                 document.getElementById('notification-panel').classList.remove('hidden');
+            } else {
+                state.lastProcessedDate = todayStr;
+                saveStateToCloud();
             }
-            renderAll();
         }
 
-        function skipDepletions() {
-            document.getElementById('depletion-preview').classList.add('hidden');
-            depletionPending = false;
-            depletionData = null;
+        function dismissNotification() {
+            document.getElementById('notification-panel').classList.add('hidden');
         }
-
-        function dismissNotification() { document.getElementById('notification-panel').classList.add('hidden'); }
 
         // ----- PROYECCIONES -----
         function calculateProjections() {
@@ -1751,7 +1693,7 @@
             const grid = document.getElementById('calendar-grid');
             if (!grid) return;
             grid.innerHTML = '';
-            document.getElementById('calendar-title').innerText = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+            document.getElementById('calendar-title').innerText = `📅 ${MONTH_NAMES[currentMonth]} ${currentYear}`;
             let firstDay = new Date(currentYear, currentMonth, 1).getDay();
             firstDay = firstDay === 0 ? 6 : firstDay - 1;
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -2205,7 +2147,8 @@
                     saveStateToCloud();
                 }
                 firstSnapshotReceived = true;
-                showDepletionPreview();
+                // Procesar mermas automáticamente
+                processAutoDepletions();
                 checkPendingHarvests();
                 renderAll();
                 document.getElementById('last-updated-time').innerText = `Última actualización: ${new Date().toLocaleTimeString()}`;
@@ -2337,7 +2280,7 @@
 
         // ----- INICIO -----
         window.onload = function() {
-            console.log("🚀 Iniciando v2.5 con reprocesamiento automático");
+            console.log("🚀 Iniciando v2.5.1 con mermas automáticas y reprocesamiento");
             initRealtimeSync();
             ensureUserName();
             setTimeout(startTour, 1500);
