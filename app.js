@@ -1845,6 +1845,7 @@ function init() {
     }
 
     ensureUserName();
+    renderAll();
     setTimeout(startTour, 1500);
 }
 
