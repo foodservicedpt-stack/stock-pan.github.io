@@ -1,0 +1,110 @@
+<!-- =============================================================================
+     Stock & Amasado — SVG Icon Sprite
+     Íconos limpios y consistentes para reemplazar emojis.
+     Cada símbolo usa viewBox 0 0 24 24, trazos uniformes.
+============================================================================= -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+
+  <!-- === NAVEGACIÓN DE VISTAS === -->
+
+  <!-- Box / Inventory -->
+  <symbol id="icon-box" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M3 3h2l.3 2H20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5l-.7-2H3a1 1 0 0 1 0-2h1.42l-.7-2H3a1 1 0 0 1 0-2h1.42l-.3-2H3a1 1 0 0 1 0-2z"/>
+  </symbol>
+
+  <!-- Calendar (week) -->
+  <symbol id="icon-calendar" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3zm0 5v11h8V7H7zm9 0v11h3V7h-3z"/>
+  </symbol>
+
+  <!-- Calendar days (month grid) -->
+  <symbol id="icon-calendar-month" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M19 4h-1V3a1 1 0 1 0-2 0v1H8V3a1 1 0 1 0-2 0v1H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2v3H5V6h14zM5 20V9h14v11H5z"/>
+  </symbol>
+
+  <!-- Coffee cup (Desayuno service) -->
+  <symbol id="icon-coffee" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M18 5h-1V4a1 1 0 1 0-2 0v1H5a1 1 0 0 0-1 1v6a5 5 0 0 0 5 5h4a5 5 0 0 0 5-5V6a1 1 0 0 0-1-1zm-2 7a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3V7h10v5zm2 7H4a1 1 0 1 1 0-2h14a1 1 0 1 1 0 2z"/>
+  </symbol>
+
+  <!-- Clipboard checklist -->
+  <symbol id="icon-checklist" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M4 3a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H5a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h12a1 1 0 0 1 0 2H5a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm8-10a1 1 0 0 1 1-1h4a1 1 0 0 1 0 2h-4a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h4a1 1 0 0 1 0 2h-4a1 1 0 0 1-1-1z"/>
+  </symbol>
+
+  <!-- Settings cog -->
+  <symbol id="icon-cog" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm7.93 5a7.48 7.48 0 0 0 0-2 7.48 7.48 0 0 0 0-2l1.62-1.27a.5.5 0 0 1 .58.08l1.5 2.5a.5.5 0 0 1 0 .62l-1.5 2.5a.5.5 0 0 1-.58.08l-1.62-1.27zM12 4.5a7.5 7.5 0 0 1 3.66.94.5.5 0 0 1 .27.45v3a.5.5 0 0 1-.3.45l-2.1 1.2a3.5 3.5 0 0 0 0-2.1l2.1-1.2a.5.5 0 0 1 .3-.45v-3a.5.5 0 0 1 .27-.45A7.5 7.5 0 0 1 12 4.5zm-7.93 5a7.48 7.48 0 0 0 0 2 7.48 7.48 0 0 0 0 2l-1.62 1.27a.5.5 0 0 1-.58-.08l-1.5-2.5a.5.5 0 0 1 0-.62l1.5-2.5a.5.5 0 0 1 .58-.08l1.62 1.27zM7.34 18.06A7.5 7.5 0 0 1 12 19.5a7.5 7.5 0 0 1 0-15 7.5 7.5 0 0 1 0 13.56z"/>
+  </symbol>
+
+  <!-- Chef / Bake -->
+  <symbol id="icon-chef-hat" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 2a4 4 0 0 0-4 4 3 3 0 0 0 6 0 4 4 0 0 0-2-3.4V3v1h-2V3a4 4 0 0 0-2 3.4 3 3 0 0 0 6 0 4 4 0 0 0-4-3.7V3zm-7 8a5 5 0 0 0 10 0H5zm14 5v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a5 5 0 0 1 10 0 3 3 0 1 0 6 0z"/>
+  </symbol>
+
+  <!-- User -->
+  <symbol id="icon-user" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 12c2.7 0 4.8-2.3 4.8-5.2S14.7 1.6 12 1.6s-4.8 2.3-4.8 5.2 2.1 5.2 4.8 5.2zm0 1.3c-3.4 0-6 2.7-6 6v1.3h12v-1.3c0-3.3-2.6-6-6-6z"/>
+  </symbol>
+
+  <!-- Close (X) -->
+  <symbol id="icon-close" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+  </symbol>
+
+  <!-- Sun (light mode) -->
+  <symbol id="icon-sun" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 3a1 1 0 0 1 1 1V6a1 1 0 1 1-2 0V4a1 1 0 0 1 1-1zm7.66 3.34a1 1 0 0 0-1.41 0l-.71.71a1 1 0 1 0 1.41 1.41l.71-.71a1 1 0 0 0 0-1.41zM4.75 7.74a1 1 0 0 1 0 1.41l-.71.71a1 1 0 1 1-1.41-1.41l.71-.71a1 1 0 0 1 1.41 0zM3 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1zm15 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1zm-2.34 7.66a1 1 0 0 0 0 1.41l.71.71a1 1 0 1 0 1.41-1.41l-.71-.71a1 1 0 0 0-1.41 0zM6.41 19a1 1 0 0 1 0-1.41l.71-.71a1 1 0 1 1 1.41 1.41l-.71.71a1 1 0 0 1-1.41 0zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+  </symbol>
+
+  <!-- Moon (dark mode) -->
+  <symbol id="icon-moon" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12.3 2a1 1 0 0 1 3.06 0 1 1 0 0 1 2.25 1 1 1 0 0 1 2.09-.6 1 1 0 0 1 1.56 1.26 2.5 2.5 0 0 1-1.42 1.8l-.39.12a4 4 0 0 1 .12 1.27v.39a4 4 0 0 1-2.71 3.79 1 1 0 0 1-.88-1.21 2 2 0 0 0-.08-2 2 2 0 0 0-.31-.31 2 2 0 0 0-.95-.52v-1.2a1 1 0 0 1 1.06-1 2 2 0 0 1 1.89 1.76 4 4 0 0 1-.28 3.19 4 4 0 0 1-3.96 2.76H5.7a4 4 0 0 1-.96-.12 4 4 0 0 1-3.13-4.9 4 4 0 0 1 1-1.88l.31-.3a1 1 0 0 1 1.2-.3 1 1 0 0 1-.2.6 2 2 0 0 0-.33.82v1.09a1 1 0 0 1-.95 1h-.3a2 2 0 0 1-.8-.3 2 2 0 0 1-.56-1.1 2 2 0 0 1 .33-1.89 4 4 0 0 1 1.61-1.58l.32-.13a1 1 0 0 1 1-.2z"/>
+  </symbol>
+
+  <!-- Save / Disk -->
+  <symbol id="icon-save" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm12 2H6v16h12V4zm-2 14H8v-2h8v2zm0-3H8v-2h8v2z"/>
+  </symbol>
+
+  <!-- Plus -->
+  <symbol id="icon-plus" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/>
+  </symbol>
+
+  <!-- Trend down (depletions) -->
+  <symbol id="icon-trend-down" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M21.8 9.9c.1 1.8-.3 3.5-.9 4.8-.6 1.3-1.4 2.4-2.3 3.3-.9.9-2 1.7-3.3 2.3-1.3.6-2.9 1-4.8.9h-.1c-2.3-.3-4.1-2.1-5-4.2-.2-.6-.3-1.2-.3-1.8 0-.6.1-1.2.3-1.8.6-2 .2-4-.1-5s.6-3.9 1.7-5.2c1-1 2.3-1.7 3.7-2.1.6-.1.9-.1 1.4-.1.3.1.7.3 1 .4l3.5 1.7c.1.1-.3-.2-.9-.8l-.3-.4c-.5-.5-.9-.8-1.4-1s-.7-.2-.8-.1-1.2 1.1-2 2.1-1 2.1-.5 3.1c.1 1 .3 1.9.7 2.8 1.8 3.3 6 4.5 9.3 3 1.5-.7 2.7-1.9 3.5-3.4.3-.6.5-1.2.5-1.8v-.2c-.3-.1-2.8.8-4.2 1.3-.3.1-.6.2-.9.1-.5-.2-.8-.6-1.2-1s-.4-1.3-.5-2c-.1-.7-.2-1.3-.2-2v-.3c0-.4.1-.8.2-1.1 0-.1.2 0 .5.2l3.1 1.1c.1 0 .2.1.4.1.6-.2 1-.3 1.4-.3.1 0 .2-.1.1-.2.6-1.1 1-2.2 1-3.4 0-.5-.1-.9-.2-1.4-.1-.1 0-.1 0 0l-.1-.1c-.5.3-1 .5-1.4.7-.7.3-1 .6-1.2.8 0 0-.3-.3-.2-.8.3-1 .6-1.9 1-2.8.6-1.3 1.4-2.4 2.3-3.3.9-.9 2-1.7 3.3-2.3 1.3-.6 2.9-1 4.8-.9.3 0 .6.1.9.1.3-.1.7-.3 1-.4l3-1.4c.3-.2.6-.2.9-.1.3 0 .5.1.7.3l2.1 1a1 1 0 0 1 .3.2z"/>
+  </symbol>
+
+  <!-- Check -->
+  <symbol id="icon-check" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+  </symbol>
+
+  <!-- Chevron left -->
+  <symbol id="icon-chevron-left" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M15.41 7.41L11.83 12l3.58 3.59-1.41 1.41L9 12l5-5z"/>
+  </symbol>
+
+  <!-- Chevron right -->
+  <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M8.59 16.59L12.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+  </symbol>
+
+  <!-- Clock / Activity -->
+  <symbol id="icon-clock" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm1 2v5l4.3 2.6-.9.9-4.1-2.5V6h1z"/>
+  </symbol>
+
+  <!-- Hourglass -->
+  <symbol id="icon-hourglass" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M6 2h12v2a3 3 0 0 0 1 2.2v5.8c0 1-.4 2-1 2.8V20a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-2.2c-.6-.8-1-1.8-1-2.8V6.2A3 3 0 0 0 6 4V2zm2 2v1h8V4H8z"/>
+  </symbol>
+
+  <!-- Party popper -->
+  <symbol id="icon-party" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M17 10a5 5 0 0 1-7.07 0 5 5 0 1 1 7.07 0zm0 2a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-8.46 6.49A7 7 0 0 0 12 21a7 7 0 0 0 7-7 5 5 0 0 0-4.9-4.9h-1.2a5.01 5.01 0 0 0-5-5A5 5 0 1 0 3 9a5 5 0 0 0 2.54 7.49zM12 15H7.5a4.5 4.5 0 0 1 0-9H12a3 3 0 0 1 2.83 2H12v1h3.83a3 3 0 0 1 2.83 2 4.47 4.47 0 0 1-3.16 4.24.5.5 0 0 1-.24.45z"/>
+  </symbol>
+
+</svg>

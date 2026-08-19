@@ -1,0 +1,18 @@
+{
+  "name": "Stock & Amasado — Obrador Colaborativo",
+  "short_name": "Stock & Amasado",
+  "description": "Panel colaborativo en tiempo real para la gestión de stock de pan y planificación de amasadoras.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF8F5",
+  "theme_color": "#4A2C11",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
