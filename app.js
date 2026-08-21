@@ -411,6 +411,7 @@ function setupEventDelegation() {
             'set-today-month': setTodayMonth,
             'open-quick-panel': () => openQuickPanel(btn.dataset.date),
             'register-production': () => registerProductionFromTask(btn.dataset.date, btn.dataset.bread),
+            'replenish-batch': () => replenishBatch(btn.dataset.key),
             'add-product': addCustomProduct,
             'harvest-bake': () => harvestBake(btn.dataset.date, btn.dataset.bread),
             'save-weekly-rules': saveWeeklyRules,
@@ -441,8 +442,17 @@ function setupEventDelegation() {
     document.body.addEventListener('change', function(e) {
         const target = e.target;
         if (target.classList.contains('weekly-svc-toggle')) {
-            const inputs = $$(`[data-dow="${target.dataset.dow}"][data-svc="${target.dataset.svc}"]`);
-            inputs.forEach(inp => { inp.disabled = !target.checked; });
+            // Weekly rules modal: uses data-dow
+            if (target.dataset.dow) {
+                const inputs = $$(`[data-dow="${target.dataset.dow}"][data-svc="${target.dataset.svc}"]`);
+                inputs.forEach(inp => { inp.disabled = !target.checked; });
+            }
+            // Quick panel: uses data-svc only, inside #quick-panel
+            else if (target.closest('#quick-panel')) {
+                const panel = target.closest('#quick-panel');
+                const inputs = panel.querySelectorAll(`[data-svc="${target.dataset.svc}"]`);
+                inputs.forEach(inp => { inp.disabled = !target.checked; });
+            }
         }
         if (target.classList.contains('product-enabled-toggle')) {
             toggleProductEnabledFromCheckbox(target);
@@ -795,7 +805,9 @@ function processAutoDepletions() {
         if (logs.length > 0) {
             allLogs.push(`• ${formatDate(runnerStr)}: ${logs.join(', ')}`);
         }
-        db.ref('obrador_panaderia/dailyStock/' + runnerStr).set({ ...state.stock });
+        const stockQtys = {};
+        Object.keys(state.stock).forEach(k => { stockQtys[k] = state.stock[k].qty; });
+        db.ref('obrador_panaderia/dailyStock/' + runnerStr).set(stockQtys);
         runnerStr = addDays(runnerStr, 1);
     }
     state.lastProcessedDate = todayStr;
@@ -1370,12 +1382,16 @@ function openQuickPanel(dateStr) {
             <div class="svc-header">
                 <span class="svc-name">${svcConf.icon} ${svcConf.name}</span>
                 <label class="flex items-center gap-1 text-[10px]">
-                    <input type="checkbox" class="svc-active-toggle" data-svc="${svcConf.key}" ${svc.active ? 'checked' : ''}>
+                    <input type="checkbox" class="weekly-svc-toggle" data-svc="${svcConf.key}" ${svc.active ? 'checked' : ''}>
                     <span class="text-neutral-500">Activo</span>
                 </label>
             </div>
             <div class="svc-breads">${breadHtml}</div>
         `;
+        // Set initial disabled state based on checkbox
+        const checkbox = div.querySelector('.weekly-svc-toggle');
+        const inputs = div.querySelectorAll('.svc-bread-input');
+        inputs.forEach(inp => { inp.disabled = !checkbox.checked; });
         container.appendChild(div);
     });
 
