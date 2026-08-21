@@ -739,6 +739,12 @@ function recalculateStockFrom(dateStr) {
                 Object.keys(state.stock).forEach(k => { stock[k] = state.stock[k].qty; });
                 logActivity(`⚠️ No se encontró historial para ${formatDate(prevDate)}, usando stock actual como base.`);
             }
+            // Normalizar: soportar ambos formatos (qty numérico o objeto {qty, margin})
+            Object.keys(stock).forEach(k => {
+                if (typeof stock[k] === 'object' && stock[k] !== null) {
+                    stock[k] = stock[k].qty;
+                }
+            });
             let currentDate = dateStr;
             const today = getTodayDateString();
             let simStock = { ...stock };
@@ -950,7 +956,9 @@ function harvestBake(dateStr, breadKey) {
         delete state.bakeSchedule[dateStr];
     }
     const today = getTodayDateString();
-    db.ref('obrador_panaderia/dailyStock/' + today).set({ ...state.stock });
+    const stockQtys = {};
+    Object.keys(state.stock).forEach(k => { stockQtys[k] = state.stock[k].qty; });
+    db.ref('obrador_panaderia/dailyStock/' + today).set(stockQtys);
     saveStateToCloud();
     renderAll();
     checkPendingHarvests();
@@ -987,6 +995,9 @@ function saveScheduledBake() {
 function renderStock() {
     const grid = document.getElementById('stock-grid');
     if (!grid) return;
+    // Evitar re-render mientras el usuario está editando un input
+    if (document.activeElement && document.activeElement.tagName === 'INPUT' && grid.contains(document.activeElement))
+        return;
 
     let totalQty = 0;
     const activeKeys = getActiveBreadKeys();
